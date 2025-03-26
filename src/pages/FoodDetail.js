@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -22,44 +22,55 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Tooltip,
+  Menu,
+  MenuItem,
+  Snackbar,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import LoginIcon from '@mui/icons-material/Login';
+import ShareIcon from '@mui/icons-material/Share';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { foodApi } from '../api/restaurantApi';
+import ErrorBoundary from '../components/ErrorBoundary';
+import ReviewSkeleton from '../components/ReviewSkeleton';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: theme.spacing(2),
   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+  height: '100%',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2),
+  },
 }));
 
 const ReviewCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2),
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: theme.spacing(2),
+  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
   transition: 'transform 0.2s, box-shadow 0.2s',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+  },
+  [theme.breakpoints.down('sm')]: {
+    marginBottom: theme.spacing(1.5),
   },
 }));
 
-const LoadingSkeleton = () => (
-  <Box>
-    <Skeleton variant="rectangular" height={400} />
-    <Box sx={{ p: 3 }}>
-      <Skeleton variant="text" height={40} width="60%" />
-      <Skeleton variant="text" height={24} width="40%" sx={{ mb: 2 }} />
-      <Skeleton variant="text" height={24} width="80%" />
-      <Skeleton variant="text" height={24} width="60%" />
-    </Box>
-  </Box>
-);
-
-const FoodDetail = () => {
+const FoodDetailContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [food, setFood] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [tabValue, setTabValue] = useState(0);
@@ -67,9 +78,17 @@ const FoodDetail = () => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [shareAnchorEl, setShareAnchorEl] = useState(null);
+  const [showCopySnackbar, setShowCopySnackbar] = useState(false);
+
+  // Memoized sorted reviews
+  const sortedReviews = useMemo(() => {
+    return [...reviews].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [reviews]);
 
   useEffect(() => {
-    // Check if user is authenticated
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
   }, []);
@@ -102,11 +121,19 @@ const FoodDetail = () => {
     setTabValue(newValue);
   };
 
-  const handleReviewClick = () => {
+  const handleReviewClick = async () => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
     } else {
-      navigate(`/foods/${id}/review`);
+      setIsSubmitting(true);
+      try {
+        await navigate(`/foods/${id}/review`);
+      } catch (error) {
+        console.error('Navigation error:', error);
+        setError('Failed to navigate to review form');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -115,19 +142,53 @@ const FoodDetail = () => {
     navigate('/login');
   };
 
+  const handleShareClick = (event) => {
+    setShareAnchorEl(event.currentTarget);
+  };
+
+  const handleShareClose = () => {
+    setShareAnchorEl(null);
+  };
+
+  const handleShare = (platform) => {
+    const url = window.location.href;
+    const text = `Check out ${food.name} on Food Review!`;
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url);
+        setShowCopySnackbar(true);
+        break;
+      default:
+        break;
+    }
+    handleShareClose();
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Grid container spacing={4}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+        <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
-            <LoadingSkeleton />
+            <Skeleton variant="rectangular" height={isMobile ? 200 : 400} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton variant="text" height={40} sx={{ mb: 1 }} />
+            <Skeleton variant="text" height={24} sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <Skeleton variant="rectangular" width={80} height={32} sx={{ borderRadius: 1 }} />
+            </Box>
+            <Skeleton variant="text" height={100} />
           </Grid>
           <Grid item xs={12} md={4}>
-            <StyledPaper>
-              <Skeleton variant="text" height={24} width="60%" sx={{ mb: 2 }} />
-              <Skeleton variant="text" height={24} width="80%" sx={{ mb: 1 }} />
-              <Skeleton variant="text" height={24} width="70%" />
-            </StyledPaper>
+            <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
           </Grid>
         </Grid>
       </Container>
@@ -136,128 +197,146 @@ const FoodDetail = () => {
 
   if (error) {
     return (
-      <Container>
-        <Alert severity="error" sx={{ mt: 4 }}>
-          {error}
-        </Alert>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+        <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
   if (!food) {
     return (
-      <Container>
-        <Alert severity="warning" sx={{ mt: 4 }}>
-          Food item not found
-        </Alert>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+        <Alert severity="error">Food not found</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Grid container spacing={4}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+      {showSuccessMessage && (
+        <Alert 
+          severity="success" 
+          sx={{ mb: 3 }}
+          onClose={() => setShowSuccessMessage(false)}
+        >
+          Review submitted successfully!
+        </Alert>
+      )}
+      
+      <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Card sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Card sx={{ borderRadius: 2, mb: 3, overflow: 'hidden' }}>
             <CardMedia
               component="img"
-              height="400"
-              image={food.image || 'https://via.placeholder.com/800x400'}
+              height={isMobile ? 200 : 400}
+              image={food.image}
               alt={food.name}
+              sx={{ objectFit: 'cover' }}
             />
-            <CardContent>
-              <Typography variant="h4" component="h1" gutterBottom>
-                {food.name}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Rating value={food.rating || 0} readOnly precision={0.5} />
-                <Typography variant="body1" sx={{ ml: 1 }}>
-                  ({food.reviewCount || 0} reviews)
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                <Typography variant={isMobile ? 'h5' : 'h4'}>
+                  {food.name}
                 </Typography>
+                <Tooltip title="Share">
+                  <IconButton onClick={handleShareClick} size="small">
+                    <ShareIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                {food.cuisine}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-                {food.tags?.map((tag) => (
-                  <Chip key={tag} label={tag} />
-                ))}
-              </Box>
-              <Typography variant="body1" paragraph>
+              <Typography variant="body1" color="text.secondary" paragraph>
                 {food.description}
               </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                {food.cuisine && (
+                  <Chip
+                    label={food.cuisine}
+                    color="primary"
+                    size={isMobile ? 'small' : 'medium'}
+                  />
+                )}
+                {food.dietaryRestrictions?.map((restriction) => (
+                  <Chip
+                    key={restriction}
+                    label={restriction}
+                    variant="outlined"
+                    size={isMobile ? 'small' : 'medium'}
+                  />
+                ))}
+              </Box>
             </CardContent>
           </Card>
 
-          <Box sx={{ mt: 4 }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange} 
-              sx={{ 
+          <StyledPaper>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
                 mb: 2,
                 '& .MuiTab-root': {
                   textTransform: 'none',
-                  fontWeight: 500,
-                }
+                  fontSize: isMobile ? '0.9rem' : '1rem',
+                },
               }}
             >
               <Tab label="Reviews" />
-              <Tab label="Ingredients" />
-              <Tab label="Nutrition" />
+              <Tab label="Details" />
             </Tabs>
 
-            {tabValue === 0 && (
+            {tabValue === 0 ? (
               <Box>
-                {reviews.length === 0 ? (
-                  <Alert severity="info">
-                    No reviews yet. Be the first to review this food!
-                  </Alert>
-                ) : (
-                  reviews.map((review) => (
+                {loading ? (
+                  <>
+                    <ReviewSkeleton />
+                    <ReviewSkeleton />
+                    <ReviewSkeleton />
+                    <ReviewSkeleton />
+                    <ReviewSkeleton />
+                  </>
+                ) : sortedReviews.length > 0 ? (
+                  sortedReviews.map((review) => (
                     <ReviewCard key={review._id}>
-                      <CardContent>
+                      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <Avatar sx={{ mr: 2 }}>{review.userName?.[0]}</Avatar>
+                          <Avatar sx={{ mr: 1 }}>{review.user?.name?.[0] || 'U'}</Avatar>
                           <Box>
-                            <Typography variant="subtitle1">{review.userName}</Typography>
-                            <Rating value={review.rating} readOnly size="small" />
+                            <Typography variant="subtitle2">
+                              {review.user?.name || 'Anonymous'}
+                            </Typography>
+                            <Rating value={review.rating} readOnly size={isMobile ? 'small' : 'medium'} />
                           </Box>
                         </Box>
-                        <Typography variant="body1" paragraph>
-                          {review.comment}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary">
                           {new Date(review.createdAt).toLocaleDateString()}
+                        </Typography>
+                        <Typography variant="body1" sx={{ mt: 1 }}>
+                          {review.comment}
                         </Typography>
                       </CardContent>
                     </ReviewCard>
                   ))
+                ) : (
+                  <Typography variant="body1" color="text.secondary" align="center">
+                    No reviews yet. Be the first to review this food!
+                  </Typography>
                 )}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleReviewClick}
-                    startIcon={isAuthenticated ? <AddIcon /> : <LoginIcon />}
-                  >
-                    {isAuthenticated ? 'Write a Review' : 'Sign in to Review'}
-                  </Button>
-                </Box>
+              </Box>
+            ) : (
+              <Box>
+                <Typography variant="body1" paragraph>
+                  <strong>Price:</strong> ${food.price}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  <strong>Dietary Restrictions:</strong> {food.dietaryRestrictions?.join(', ')}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  <strong>Taste Profile:</strong> {food.tasteProfile?.join(', ')}
+                </Typography>
               </Box>
             )}
-
-            {tabValue === 1 && (
-              <Alert severity="info">
-                Ingredients information coming soon!
-              </Alert>
-            )}
-
-            {tabValue === 2 && (
-              <Alert severity="info">
-                Nutrition information coming soon!
-              </Alert>
-            )}
-          </Box>
+          </StyledPaper>
         </Grid>
 
         <Grid item xs={12} md={4}>
@@ -287,36 +366,103 @@ const FoodDetail = () => {
             variant="contained"
             color="primary"
             fullWidth
-            size="large"
+            size={isMobile ? 'medium' : 'large'}
             onClick={handleReviewClick}
             startIcon={isAuthenticated ? <AddIcon /> : <LoginIcon />}
+            disabled={isSubmitting}
             sx={{
-              py: 1.5,
+              py: isMobile ? 1 : 1.5,
               borderRadius: 2,
               textTransform: 'none',
-              fontSize: '1.1rem',
+              fontSize: isMobile ? '1rem' : '1.1rem',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               '&:hover': {
                 boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
               },
+              '&.Mui-disabled': {
+                backgroundColor: 'rgba(0, 0, 0, 0.12)',
+              },
             }}
           >
-            {isAuthenticated ? 'Write a Review' : 'Sign in to Review'}
+            {isSubmitting ? 'Loading...' : isAuthenticated ? 'Write a Review' : 'Sign in to Review'}
           </Button>
         </Grid>
       </Grid>
 
-      {/* Login Dialog */}
-      <Dialog open={showLoginDialog} onClose={() => setShowLoginDialog(false)}>
-        <DialogTitle>Sign in Required</DialogTitle>
+      <Menu
+        anchorEl={shareAnchorEl}
+        open={Boolean(shareAnchorEl)}
+        onClose={handleShareClose}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            minWidth: 200,
+          }
+        }}
+      >
+        <MenuItem onClick={() => handleShare('facebook')}>
+          <FacebookIcon sx={{ mr: 1, color: '#1877f2' }} />
+          Facebook
+        </MenuItem>
+        <MenuItem onClick={() => handleShare('twitter')}>
+          <TwitterIcon sx={{ mr: 1, color: '#1da1f2' }} />
+          Twitter
+        </MenuItem>
+        <MenuItem onClick={() => handleShare('whatsapp')}>
+          <WhatsAppIcon sx={{ mr: 1, color: '#25d366' }} />
+          WhatsApp
+        </MenuItem>
+        <MenuItem onClick={() => handleShare('copy')}>
+          <ContentCopyIcon sx={{ mr: 1 }} />
+          Copy Link
+        </MenuItem>
+      </Menu>
+
+      <Snackbar
+        open={showCopySnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowCopySnackbar(false)}
+        message="Link copied to clipboard!"
+      />
+
+      <Dialog 
+        open={showLoginDialog} 
+        onClose={() => setShowLoginDialog(false)}
+        PaperProps={{
+          sx: {
+            width: '90%',
+            maxWidth: 400,
+            borderRadius: 2,
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>Sign in Required</DialogTitle>
         <DialogContent>
-          <Typography>
+          <Typography variant="body1" paragraph>
             Please sign in to write a review. This helps us maintain the quality of our reviews and prevent spam.
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Benefits of signing in:
+          </Typography>
+          <Box component="ul" sx={{ mt: 1, pl: 2 }}>
+            <Typography component="li" variant="body2">Track your reviews</Typography>
+            <Typography component="li" variant="body2">Edit or delete your reviews</Typography>
+            <Typography component="li" variant="body2">Get personalized recommendations</Typography>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowLoginDialog(false)}>Cancel</Button>
-          <Button onClick={handleLoginClick} variant="contained" color="primary">
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={() => setShowLoginDialog(false)}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleLoginClick} 
+            variant="contained" 
+            color="primary"
+            sx={{ textTransform: 'none' }}
+          >
             Sign In
           </Button>
         </DialogActions>
@@ -324,5 +470,12 @@ const FoodDetail = () => {
     </Container>
   );
 };
+
+// Wrap the component with ErrorBoundary
+const FoodDetail = () => (
+  <ErrorBoundary>
+    <FoodDetailContent />
+  </ErrorBoundary>
+);
 
 export default FoodDetail; 
