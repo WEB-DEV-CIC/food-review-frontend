@@ -3,37 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodxBites</title>
+    <title>Admin</title>
+    <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="./css/styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-
 <body>
-    
-    <!-- Navigation Bar -->
+       <!-- Navigation Bar -->
     <header>
         <div id="navbar-container"></div>
     </header>
-    
-    <main>
-        <section class="hero">
-            <h1 >Discover the best meal that does wonder to your taste buds, <p>with over 1000+ restaurants to choose from
-            we present to you a taste you would never forget.</p></h1>
-            <button class="btn" id="digIn" onclick="digIn()">    DIG IN</button>
-        </section>
+    <h1>Admin Page</h1>
+    <p>Welcome to the admin dashboard.</p>
 
-        <section class="featured-foods">
-            <h2>Featured Foods</h2>
-            <div class="food-grid" id="featuredFoods">
-                <!-- Foods will be loaded here dynamically -->
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <p>© 2025 Food Review App. All rights reserved.</p>
-    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="./js/function.js"></script>
     <script>
@@ -44,13 +27,6 @@
             })
             .catch(error => console.error('Error fetching navbar:', error));
 
-        function digIn() {
-            window.location.href = './foodlist.html';
-        }
     </script>
-    <script src="./js/main.js"></script>
-    <script src="./js/api.js"></script>
-    <script src="./js/auth.js"></script>
-    
 </body>
 </html>

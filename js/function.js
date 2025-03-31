@@ -1,20 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const navbarToggler = document.querySelector('.navbar-toggler');
-    const navbarCollapse = document.querySelector('#navbarNavAltMarkup');
+// document.addEventListener('DOMContentLoaded', () => {
+//     const navbarToggler = document.querySelector('.navbar-toggler');
+//     const navbarCollapse = document.querySelector('#navbarNavAltMarkup');
 
-    navbarToggler.addEventListener('click', () => {
-        navbarCollapse.classList.toggle('show');
-    });
+//     navbarToggler.addEventListener('click', () => {
+//         navbarCollapse.classList.toggle('show');
+//     });
 
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 992) {
-            navbarCollapse.classList.remove('show');
-        }
-    });
-});
+//     window.addEventListener('resize', () => {
+//         if (window.innerWidth > 992) {
+//             navbarCollapse.classList.remove('show');
+//         }
+//     });
+// });
 
 function login() {
-    window.location.href = 'login.html';
+    window.location.href = './register/index.html';
 }
 
 // Attach the login function to the button
