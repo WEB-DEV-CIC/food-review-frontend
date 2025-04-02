@@ -21,17 +21,6 @@ color: white;
 margin-right: 15px; /* Spacing between icon and text */
 }
 
-.nav-links {
-display: flex;
-list-style: none;
-}
-
-.nav-links-li {
-margin-right: 20px;
-color: white;
-font-size: 18px;
-}
-
 .navbar-brand {
     font-weight: bold;
     font-size: 1.5rem;
@@ -39,12 +28,13 @@ font-size: 18px;
 }
 .nav-link {
  font-weight: 500;
+ font-weight: bold;
  color: #555;
 }
 .nav-link.active {
 color: #007bff !important; /* Bootstrap primary blue */
 font-weight: bold;
-border-bottom: 2px solid #007bff;
+
 }
 .btn-outline-primary:hover {
 background-color: #007bff;
@@ -62,10 +52,7 @@ color: #fff;
     
     font-family: sans-serif;
 }
-.opening-text{
-    font-size: 25px;
-    font-family:  sans-serif;
-}
+
 
 .hero {
     background: linear-gradient(135deg, #06c299, #007bff); /* Use defined colors */
@@ -76,17 +63,6 @@ color: #fff;
     overflow: hidden;
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
-    background-size: cover;
-    opacity: 0.1;
-}
 
 .hero h1 {
     font-size: 3.5rem;
@@ -110,7 +86,7 @@ color: #fff;
     border-radius: 5px;
     transition: 0.3s;
     text-decoration: none;
-    cursor: pointer;
+    
 }
 
 
@@ -186,7 +162,49 @@ color: #fff;
     margin: 0;
 }
 
-#digIn {
-    cursor: pointer; /* Hand sign cursor */
-    /* ...existing code... */
+
+
+.topnav{
+    overflow: hidden;
+    padding: 10px;
+
+}
+
+.topnav a{
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+}
+
+.topnav .searchContainer{
+    float: right;
+    
+}
+
+.body{
+    font-family: sans-serif;
+    background:'#ffffff';
+}
+
+form{
+    background-color: #151f30;
+    width: 300px;
+    height: 43px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+}
+
+input{
+    all: unset;
+    font: 15px system-ui;
+    color: #fff;
+    height: 100%;
+    width: 100%;
+    padding: 6px 9px;
 }

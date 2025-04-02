@@ -1,160 +1,182 @@
-const foods = {
-    foodGrid: document.getElementById('foodGrid'),
-    searchInput: document.getElementById('searchInput'),
-    regionFilter: document.getElementById('regionFilter'),
-    tasteProfileFilter: document.getElementById('tasteProfileFilter'),
-    dietaryFilter: document.getElementById('dietaryFilter'),
-    prevPageBtn: document.getElementById('prevPage'),
-    nextPageBtn: document.getElementById('nextPage'),
-    currentPageSpan: document.getElementById('currentPage'),
-    totalPagesSpan: document.getElementById('totalPages'),
-    currentPage: 1,
-    totalPages: 1,
-    filters: {
-        search: '',
-        region: '',
-        tasteProfile: '',
-        dietaryRestrictions: ''
-    },
+// Food detail page functionality
+const food = {
+    foodDetail: document.getElementById('foodDetail'),
+    reviewForm: document.getElementById('reviewForm'),
+    reviewsList: document.getElementById('reviewsList'),
+    foodId: null,
 
     async init() {
         try {
-            await this.loadFoods();
-            this.setupEventListeners();
-        } catch (error) {
-            console.error('Error initializing foods page:', error);
-            this.showError('Failed to load foods. Please try again later.');
-        }
-    },
+            // Get food ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            this.foodId = urlParams.get('id');
 
-    setupEventListeners() {
-        // Search input with debounce
-        let searchTimeout;
-        this.searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.filters.search = e.target.value;
-                this.currentPage = 1;
-                this.loadFoods();
-            }, 300);
-        });
-
-        // Filter change handlers
-        this.regionFilter.addEventListener('change', (e) => {
-            this.filters.region = e.target.value;
-            this.currentPage = 1;
-            this.loadFoods();
-        });
-
-        this.tasteProfileFilter.addEventListener('change', (e) => {
-            this.filters.tasteProfile = e.target.value;
-            this.currentPage = 1;
-            this.loadFoods();
-        });
-
-        this.dietaryFilter.addEventListener('change', (e) => {
-            this.filters.dietaryRestrictions = e.target.value;
-            this.currentPage = 1;
-            this.loadFoods();
-        });
-
-        // Pagination handlers
-        this.prevPageBtn.addEventListener('click', () => {
-            if (this.currentPage > 1) {
-                this.currentPage--;
-                this.loadFoods();
-            }
-        });
-
-        this.nextPageBtn.addEventListener('click', () => {
-            if (this.currentPage < this.totalPages) {
-                this.currentPage++;
-                this.loadFoods();
-            }
-        });
-    },
-
-    async loadFoods() {
-        try {
-            const params = {
-                page: this.currentPage,
-                limit: 12,
-                ...this.filters
-            };
-
-            const response = await window.api.food.getAll(params);
-            if (response && response.foods) {
-                this.totalPages = response.totalPages || 1;
-                this.updatePaginationControls();
-                this.renderFoods(response.foods);
-            } else {
-                throw new Error('Invalid response format');
-            }
-        } catch (error) {
-            console.error('Error loading foods:', error);
-            this.showError('Failed to load foods. Please try again later.');
-        }
-    },
-
-    updatePaginationControls() {
-        this.currentPageSpan.textContent = this.currentPage;
-        this.totalPagesSpan.textContent = this.totalPages;
-        this.prevPageBtn.disabled = this.currentPage === 1;
-        this.nextPageBtn.disabled = this.currentPage === this.totalPages;
-    },
-
-    renderFoods(foods) {
-        if (!this.foodGrid) {
-            console.error('Food grid container not found');
-            return;
-        }
-        if (!foods || !Array.isArray(foods) || foods.length === 0) {
-            this.showError('No food items found matching your criteria.');
-            return;
-        }
-
-        this.foodGrid.innerHTML = foods.map(food => {
-            // Ensure food object exists and has required properties
-            if (!food || !food._id) {
-                console.warn('Invalid food item:', food);
-                return '';
-            }
-            
-            // Safely access properties with defaults
-            const name = food.name || 'Unnamed Food';
-            const imageUrl = food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-            const rating = typeof food.rating === 'number' ? food.rating : 0;
-            const region = food.region || 'Region not specified';
-            const tasteProfile = Array.isArray(food.tasteProfile) ? food.tasteProfile : [];
-            const dietaryRestrictions = Array.isArray(food.dietaryRestrictions) ? food.dietaryRestrictions : [];
-
-            return `
-                <div class="food-card">
-                    <img src="${imageUrl}" alt="${name}" onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'">
-                    <div class="food-info">
-                        <h3>${name}</h3>
-                        <div class="rating">${this.generateStarRating(rating)}</div>
-                        <div class="region">${region}</div>
-                        ${tasteProfile.length > 0 ? `
-                            <div class="taste-profiles">
-                                ${tasteProfile.map(taste => `<span class="taste-tag">${taste}</span>`).join('')}
-                            </div>
-                        ` : ''}
-                        ${dietaryRestrictions.length > 0 ? `
-                            <div class="dietary-restrictions">
-                                ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
-                            </div>
-                        ` : ''}
-                        <a href="food.html?id=${food._id}" class="button">View Details</a>
+            if (!this.foodId || this.foodId === '#') {
+                this.showError(`
+                    <div class="error-container">
+                        <h2>Invalid Food ID</h2>
+                        <p>We couldn't find the food you're looking for. Please try:</p>
+                        <ul>
+                            <li>Going back to the <a href="foods.html">foods listing page</a></li>
+                            <li>Selecting a food item from the list</li>
+                            <li>Checking if the URL is correct</li>
+                        </ul>
                     </div>
+                `);
+                return;
+            }
+
+            // Load food details and reviews
+            await Promise.all([
+                this.loadFoodDetails(),
+                this.loadReviews()
+            ]);
+
+            // Setup review form if user is logged in
+            this.setupReviewForm();
+        } catch (error) {
+            console.error('Error initializing food page:', error);
+            this.showError(`
+                <div class="error-container">
+                    <h2>Error Loading Food Details</h2>
+                    <p>We encountered an error while loading the food details. Please try:</p>
+                    <ul>
+                        <li>Refreshing the page</li>
+                        <li>Going back to the <a href="foods.html">foods listing page</a></li>
+                        <li>Checking your internet connection</li>
+                    </ul>
+                </div>
+            `);
+        }
+    },
+
+    async loadFoodDetails() {
+        try {
+            const foodData = await window.api.food.getById(this.foodId);
+            if (!foodData) {
+                throw new Error('Food not found');
+            }
+            this.renderFoodDetails(foodData);
+        } catch (error) {
+            console.error('Error loading food details:', error);
+            throw error;
+        }
+    },
+
+    async loadReviews() {
+        try {
+            const response = await window.api.food.getReviews(this.foodId);
+            // Always render reviews, even if empty
+            this.renderReviews(response.reviews || []);
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            // Show empty reviews state instead of error
+            this.renderReviews([]);
+        }
+    },
+
+    renderFoodDetails(foodData) {
+        // Safely access properties with defaults
+        const name = foodData.name || 'Unnamed Food';
+        const imageUrl = foodData.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+        const description = foodData.description || 'No description available';
+        const rating = typeof foodData.rating === 'number' ? foodData.rating : 0;
+        const region = foodData.region || 'Region not specified';
+        const tasteProfile = Array.isArray(foodData.tasteProfile) ? foodData.tasteProfile : [];
+        const dietaryRestrictions = Array.isArray(foodData.dietaryRestrictions) ? foodData.dietaryRestrictions : [];
+        const ingredients = Array.isArray(foodData.ingredients) ? foodData.ingredients : [];
+
+        this.foodDetail.innerHTML = `
+            <div class="food-header">
+                <div class="food-image">
+                    <img src="${imageUrl}" alt="${name}" onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'">
+                </div>
+                <div class="food-info">
+                    <h1>${name}</h1>
+                    <div class="rating">${this.generateStarRating(rating)}</div>
+                    <div class="region">${region}</div>
+                    <p class="description">${description}</p>
+                    
+                    ${ingredients.length > 0 ? `
+                        <div class="ingredients">
+                            <h2>Ingredients</h2>
+                            <ul>
+                                ${ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    ${tasteProfile.length > 0 ? `
+                        <div class="taste-profiles">
+                            <h2>Taste Profile</h2>
+                            ${tasteProfile.map(taste => `<span class="taste-tag">${taste}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${dietaryRestrictions.length > 0 ? `
+                        <div class="dietary-restrictions">
+                            <h2>Dietary Information</h2>
+                            ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    },
+
+    renderReviews(reviews) {
+        if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
+            this.reviewsList.innerHTML = `
+                <div class="no-reviews">
+                    <h3>No Reviews Yet</h3>
+                    <p>Be the first to review this food!</p>
+                    <p class="review-prompt">Share your experience and help others discover this delicious dish.</p>
                 </div>
             `;
-        }).join('');
-
-        // If no valid food items were rendered, show error
-        if (!this.foodGrid.innerHTML.trim()) {
-            this.showError('No valid food items available.');
+            return;
         }
+
+        this.reviewsList.innerHTML = reviews.map(review => `
+            <div class="review">
+                <div class="review-header">
+                    <div class="rating">${this.generateStarRating(review.rating)}</div>
+                    <div class="review-date">${new Date(review.createdAt).toLocaleDateString()}</div>
+                </div>
+                <div class="review-comment">${review.comment}</div>
+                <div class="review-author">By ${review.userName || 'Anonymous'}</div>
+            </div>
+        `).join('');
+    },
+
+    setupReviewForm() {
+        if (!this.reviewForm) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            this.reviewForm.innerHTML = `
+                <p>Please <a href="#" id="loginPrompt">login</a> to write a review.</p>
+            `;
+            document.getElementById('loginPrompt').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginBtn').click();
+            });
+            return;
+        }
+
+        this.reviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rating = document.getElementById('reviewRating').value;
+            const comment = document.getElementById('reviewComment').value;
+
+            try {
+                await window.api.food.addReview(this.foodId, rating, comment);
+                await this.loadReviews(); // Reload reviews after submitting
+                this.reviewForm.reset();
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                this.showError('Failed to submit review. Please try again.');
+            }
+        });
     },
 
     generateStarRating(rating) {
@@ -168,20 +190,19 @@ const foods = {
     },
 
     showError(message) {
-        if (!this.foodGrid) return;
-        this.foodGrid.innerHTML = `
-            <div class="error-message">
-                ${message}
-            </div>
-        `;
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = message;
+        this.foodDetail.innerHTML = '';
+        this.foodDetail.appendChild(errorDiv);
     }
 };
 
-// Initialize the foods page
+// Initialize the food detail page
 document.addEventListener('DOMContentLoaded', () => {
-    if (foods.foodGrid) {
-        foods.init();
+    if (food.foodDetail) {
+        food.init();
     } else {
-        console.error('Food grid container not found');
+        console.error('Food detail container not found');
     }
-});
+}); 
