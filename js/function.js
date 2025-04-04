@@ -1,5 +1,5 @@
 function login() {
-    window.location.href = 'login.html';
+    window.location.href = './register/index.html';
 }
 
 // Attach the login function to the button

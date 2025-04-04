@@ -1,0 +1,25 @@
+.adminCard{
+    width: 25%;
+    border-radius: 1.4rem;
+    margin: 1.5rem;
+    margin-left: 2rem;
+    padding:100px 400px;
+}
+.adminCard img{
+    width: 600px;
+    height: 250px;
+    align-content: center;
+    
+}
+.toph{
+    color: black
+}
+body{
+
+    font-family: sans-serif;
+}
+
+h1{
+    color: #ffffff;
+    font-family: sans-serif;
+}
