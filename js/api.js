@@ -54,13 +54,16 @@ const authApi = {
 const foodApi = {
     getAll: async (params = {}) => {
         try {
+            console.log('Food API: getAll called with params:', params);
             const queryString = new URLSearchParams({
                 page: params.page || 1,
                 limit: params.limit || 10,
                 ...params
             }).toString();
+            console.log('Food API: Request URL:', `${API_BASE_URL}/foods?${queryString}`);
             const response = await fetch(`${API_BASE_URL}/foods?${queryString}`);
             const data = await handleResponse(response);
+            console.log('Food API: Response data:', data);
             if (!data || !data.foods) {
                 throw new Error('Invalid response format: missing foods array');
             }
@@ -117,8 +120,100 @@ const foodApi = {
     },
 };
 
-// Export the API functions
+// User API
+const userApi = {
+    getProfile: async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getProfile:', error);
+            throw error;
+        }
+    },
+    
+    updateProfile: async (userId, profileData) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(profileData),
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in updateProfile:', error);
+            throw error;
+        }
+    },
+    
+    getReviews: async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/users/${userId}/reviews`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getReviews:', error);
+            return { reviews: [] };
+        }
+    },
+    
+    getActivity: async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/users/${userId}/activity`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getActivity:', error);
+            return [];
+        }
+    },
+    
+    uploadProfilePicture: async (userId, file) => {
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('profilePicture', file);
+            
+            const response = await fetch(`${API_BASE_URL}/users/${userId}/profile-picture`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData,
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in uploadProfilePicture:', error);
+            throw error;
+        }
+    }
+};
+
+// Expose API to window object
 window.api = {
     auth: authApi,
     food: foodApi,
+    user: userApi
 };
+
+console.log('API module loaded and exposed to window.api');

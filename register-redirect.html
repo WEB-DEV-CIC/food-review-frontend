@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="0;url=register.html">
+    <title>Redirecting to Register</title>
+    <script>
+        // Get the redirect parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+        
+        // Check if auth object is available
+        if (typeof auth !== 'undefined' && auth.register) {
+            // Use auth.register function
+            auth.register(redirect);
+        } else {
+            // Fallback to direct navigation
+            if (redirect) {
+                window.location.href = `register.html?redirect=${redirect}`;
+            } else {
+                window.location.href = 'register.html';
+            }
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to register page...</p>
+</body>
+</html> 

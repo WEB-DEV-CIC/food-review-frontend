@@ -3,54 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodxBites</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <meta name="description" content="Discover the best meals and restaurants with FoodxBites - Your ultimate food review platform">
+    <title>FoodxBites - Discover Amazing Food</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./css/styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
-    
     <!-- Navigation Bar -->
     <header>
         <div id="navbar-container"></div>
     </header>
     
     <main>
+        <!-- Hero Section -->
         <section class="hero">
-            <h1 >Discover the best meal that does wonder to your taste buds, <p>with over 1000+ restaurants to choose from
-            we present to you a taste you would never forget.</p></h1>
-            <a class="btn" id="digIn" onclick="digIn()" href="food.html">    DIG IN</a>
+            <div class="container">
+                <h1>Discover the best meal that does wonder to your taste buds</h1>
+                <p>With over 1000+ restaurants to choose from, we present to you a taste you would never forget.</p>
+                <a class="btn" id="digIn" onclick="digIn()" href="food.html">
+                    <i class="fas fa-utensils"></i> DIG IN
+                </a>
+            </div>
         </section>
 
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="container">
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search foods...">
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Foods Section -->
         <section class="featured-foods">
-            <h2>Featured Foods</h2>
-            <div class="food-grid" id="featuredFoods">
-                <!-- Foods will be loaded here dynamically -->
+            <div class="container">
+                <h2 class="section-title">Featured Foods</h2>
+                <div class="food-grid" id="featuredFoods">
+                    <!-- Foods will be loaded here dynamically -->
+                </div>
             </div>
         </section>
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
-        <p>© 2025 FoodxBites. All rights reserved.</p>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 FoodxBites. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="./js/function.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/api-test.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/test.js"></script>
     <script>
+        // Load navbar
         fetch('./components/navbar.html')
             .then(response => response.text())
-            .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
+            .then(data => {
+                document.getElementById('navbar-container').innerHTML = data;
+                // Initialize auth after navbar is loaded
+                if (typeof auth !== 'undefined') {
+                    auth.init();
+                }
+                // Initialize main functionality
+                if (typeof main !== 'undefined') {
+                    main.init();
+                }
             })
-            .catch(error => console.error('Error fetching navbar:', error));
+            .catch(error => {
+                console.error('Error loading navbar:', error);
+            });
 
+        // Dig In function
         function digIn() {
-            window.location.href = './foodlist.html';
+            window.location.href = './food.html';
         }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const foodCards = document.querySelectorAll('.food-card');
+            
+            foodCards.forEach(card => {
+                const foodName = card.querySelector('h3').textContent.toLowerCase();
+                const foodRegion = card.querySelector('.region')?.textContent.toLowerCase() || '';
+                
+                if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
     </script>
-    <script src="./js/main.js"></script>
-    <script src="./js/api.js"></script>
-    <script src="./js/auth.js"></script>
-    
 </body>
 </html>
