@@ -3,8 +3,28 @@ const main = {
     featuredFoods: document.getElementById('featuredFoods'),
 
     async init() {
+        console.log('Initializing main functionality');
         try {
+            // Check if featuredFoods element exists
+            if (!this.featuredFoods) {
+                console.error('Featured foods container not found in DOM');
+                this.featuredFoods = document.getElementById('featuredFoods');
+                if (!this.featuredFoods) {
+                    console.error('Still cannot find featuredFoods element after retry');
+                    return;
+                }
+            }
+            
+            // Check if API is available
+            if (!window.api || !window.api.food) {
+                console.error('API or food API not available');
+                this.showError('API not available. Please check console for details.');
+                return;
+            }
+            
+            console.log('Loading featured foods...');
             await this.loadFeaturedFoods();
+            console.log('Featured foods loaded successfully');
         } catch (error) {
             console.error('Error loading featured foods:', error);
             this.showError('Failed to load featured foods. Please try again later.');
@@ -13,15 +33,30 @@ const main = {
 
     async loadFeaturedFoods() {
         try {
+            console.log('Calling API to get featured foods');
+            
+            // Check if API is available
+            if (!window.api || !window.api.food) {
+                console.error('API or food API not available, using fallback data');
+                this.renderFoods(this.getFallbackFoods());
+                return;
+            }
+            
             const response = await window.api.food.getAll({ limit: 6 });
+            console.log('API response:', response);
+            
             if (response && response.foods) {
+                console.log(`Rendering ${response.foods.length} food items`);
                 this.renderFoods(response.foods);
             } else {
-                throw new Error('Invalid response format');
+                console.error('Invalid response format:', response);
+                console.log('Using fallback data due to invalid response format');
+                this.renderFoods(this.getFallbackFoods());
             }
         } catch (error) {
             console.error('Error loading featured foods:', error);
-            throw error;
+            console.log('Using fallback data due to error');
+            this.renderFoods(this.getFallbackFoods());
         }
     },
 
@@ -96,6 +131,39 @@ const main = {
                 ${message}
             </div>
         `;
+    },
+
+    // Fallback food data in case API is not available
+    getFallbackFoods() {
+        return [
+            {
+                _id: 'fallback1',
+                name: 'Delicious Pizza',
+                image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                rating: 4.5,
+                region: 'Italian',
+                tasteProfile: ['Savory', 'Cheesy'],
+                dietaryRestrictions: ['Vegetarian']
+            },
+            {
+                _id: 'fallback2',
+                name: 'Fresh Sushi',
+                image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                rating: 4.8,
+                region: 'Japanese',
+                tasteProfile: ['Fresh', 'Umami'],
+                dietaryRestrictions: ['Gluten-Free']
+            },
+            {
+                _id: 'fallback3',
+                name: 'Spicy Tacos',
+                image: 'https://images.unsplash.com/photo-1564053489984-317bbd824340?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                rating: 4.2,
+                region: 'Mexican',
+                tasteProfile: ['Spicy', 'Savory'],
+                dietaryRestrictions: ['Gluten-Free']
+            }
+        ];
     }
 };
 

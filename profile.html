@@ -3,113 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
-          integrity="sha384-QWTKzYjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
-    <!-- Custom Styles -->
+    <meta name="description" content="Your FoodxBites profile - Manage your account and view your food reviews">
+    <title>My Profile - FoodxBites</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" href="./css/style.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="./css/profile.css">
 </head>
 <body>
-
     <!-- Navigation Bar -->
     <header>
         <div id="navbar-container"></div>
     </header>
 
-    <div class="container mt-4">
-        <h1 class="text-center">Profile page</h1>
-        <p class="text-center">Welcome to your Profile page.</p>
-        <!-- Profile Section -->
-        <div class="profile-container mx-auto">
-            <div class="profile-header">
-                <img src="profile.jpg" alt="Profile Picture">
-                <div>
-                    <h2 id="full-name">User Full-name</h2>
+    <main class="profile-page">
+        <div class="container">
+            <div class="profile-wrapper">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-cover">
+                        <div class="profile-avatar">
+                            <img src="profile.jpg" alt="Profile Picture" id="profile-picture">
+                            <button class="change-avatar" aria-label="Change profile picture" onclick="document.getElementById('avatar-input').click()">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" id="avatar-input" hidden accept="image/*">
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="full-name">User Full-name</h1>
+                        <p class="user-role"><i class="fas fa-user"></i> Food Enthusiast</p>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-value">0</span>
+                                <span class="stat-label">Reviews</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">0</span>
+                                <span class="stat-label">Following</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">0</span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="section">
-                <h3>Personal Information <button type="button" onclick="editSection('personal-info')">Edit</button></h3>
-                <div id="personal-info">
-                    <p><strong>First Name:</strong> <span id="first-name"> </span></p>
-                    <p><strong>Last Name:</strong> <span id="last-name"> </span></p>
-                    <p><strong>Email:</strong> <span id="email"></span> </p>
-                    <p><strong>Phone:</strong> <span id="phone"></span> </p>
-                    <p><strong>Bio:</strong> <span id="bio"> </span> </p>
-                </div>
-            </div> 
+                <!-- Profile Content -->
+                <div class="profile-content">
+                    <div class="row g-3">
+                        <!-- Personal Information -->
+                        <div class="col-12 col-md-6">
+                            <div class="profile-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+                                    <button class="edit-btn" aria-label="Edit personal information" onclick="editSection('personal-info')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div class="card-body" id="personal-info">
+                                    <div class="info-group">
+                                        <label><i class="fas fa-user"></i> First Name</label>
+                                        <span id="first-name">John</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-user"></i> Last Name</label>
+                                        <span id="last-name">Doe</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-envelope"></i> Email</label>
+                                        <span id="email">john.doe@example.com</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-phone"></i> Phone</label>
+                                        <span id="phone">+1 234 567 890</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-info-circle"></i> Bio</label>
+                                        <span id="bio">Food lover and restaurant reviewer</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="section">
-                <h3>Address <button type="button" onclick="editSection('address-info')">Edit</button></h3>
-                <div id="address-info">
-                    <p><strong>Country:</strong> <span id="country"></span> </p>
-                    <p><strong>City/State:</strong> <span id="city-state"> </span></p>
-                    <p><strong>Postal Code:</strong> <span id="postal-code"> </span></p>
+                        <!-- Address Information -->
+                        <div class="col-12 col-md-6">
+                            <div class="profile-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+                                    <button class="edit-btn" aria-label="Edit address information" onclick="editSection('address-info')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div class="card-body" id="address-info">
+                                    <div class="info-group">
+                                        <label><i class="fas fa-globe"></i> Country</label>
+                                        <span id="country">United States</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-city"></i> City/State</label>
+                                        <span id="city-state">New York, NY</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label><i class="fas fa-mail-bulk"></i> Postal Code</label>
+                                        <span id="postal-code">10001</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="profile-card mt-3">
+                        <div class="card-header">
+                            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                <p class="text-muted">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    <!-- Custom JavaScript -->
-    <script src="./js/function.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/profile.js"></script>
     <script>
-        // Fetch and insert the navigation bar dynamically
+        // Load navbar
         fetch('./components/navbar.html')
             .then(response => response.text())
             .then(html => {
                 document.getElementById('navbar-container').innerHTML = html;
+                // Initialize auth after navbar is loaded
+                if (typeof auth !== 'undefined') {
+                    auth.init();
+                }
             })
             .catch(error => console.error('Error fetching navbar:', error));
-    </script>
 
-    <script>
+        // Profile picture change
+        document.getElementById('avatar-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-picture').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+                
+                // Upload profile picture if user is logged in
+                if (typeof profile !== 'undefined' && profile.uploadProfilePicture) {
+                    const userData = JSON.parse(localStorage.getItem('user'));
+                    if (userData && userData._id) {
+                        profile.uploadProfilePicture(userData._id, file);
+                    }
+                }
+            }
+        });
+
+        // Edit section function
         function editSection(sectionId) {
-            let section = document.getElementById(sectionId);
-            let elements = section.getElementsByTagName("span");
+            const section = document.getElementById(sectionId);
+            const infoGroups = section.getElementsByClassName('info-group');
+            
+            Array.from(infoGroups).forEach(group => {
+                const span = group.querySelector('span');
+                const currentValue = span.innerText;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentValue;
+                input.className = 'form-control';
+                
+                // Add data-field attribute based on the span ID
+                const spanId = span.id;
+                if (spanId) {
+                    input.setAttribute('data-field', spanId);
+                }
+                
+                span.replaceWith(input);
+            });
 
-            for (let i = 0; i < elements.length; i++) {
-                let currentValue = elements[i].innerText;
-                let inputField = document.createElement("input");
-                inputField.type = "text";
-                inputField.value = currentValue;
-                elements[i].replaceWith(inputField);
-            }
-
-            let saveButton = document.createElement("button");
-            saveButton.innerText = "Save";
-            saveButton.classList.add("btn", "btn-success", "mt-2");
-            saveButton.onclick = function() {
-                saveSection(sectionId);
-            };
-
-            section.appendChild(saveButton);
+            const header = section.closest('.profile-card').querySelector('.card-header');
+            const editBtn = header.querySelector('.edit-btn');
+            editBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+            editBtn.onclick = () => saveSection(sectionId);
         }
 
+        // Save section function
         function saveSection(sectionId) {
-            let section = document.getElementById(sectionId);
-            let inputs = section.getElementsByTagName("input");
+            const section = document.getElementById(sectionId);
+            const inputs = section.getElementsByTagName('input');
+            const formData = {};
             
-            for (let i = 0; i < inputs.length; i++) {
-                let span = document.createElement("span");
-                span.innerText = inputs[i].value;
-                inputs[i].replaceWith(span);
-            }
+            Array.from(inputs).forEach(input => {
+                const span = document.createElement('span');
+                span.innerText = input.value;
+                input.replaceWith(span);
+                
+                // Add to form data
+                const fieldName = input.id || input.getAttribute('data-field');
+                if (fieldName) {
+                    formData[fieldName] = input.value;
+                }
+            });
 
-            let saveButton = section.querySelector("button");
-            if (saveButton) {
-                saveButton.remove();
+            const header = section.closest('.profile-card').querySelector('.card-header');
+            const saveBtn = header.querySelector('.edit-btn');
+            saveBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+            saveBtn.onclick = () => editSection(sectionId);
+            
+            // Save profile changes if user is logged in
+            if (typeof profile !== 'undefined' && profile.saveProfileChanges && Object.keys(formData).length > 0) {
+                profile.saveProfileChanges(formData);
             }
         }
     </script>
-
 </body>
 </html>
