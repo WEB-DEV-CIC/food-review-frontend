@@ -71,23 +71,30 @@
     <script src="./js/main.js"></script>
     <script src="./js/test.js"></script>
     <script>
-        // Load navbar
-        fetch('./components/navbar.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('navbar-container').innerHTML = data;
-                // Initialize auth after navbar is loaded
-                if (typeof auth !== 'undefined') {
-                    auth.init();
-                }
-                // Initialize main functionality
-                if (typeof main !== 'undefined') {
+        // Load navbar and initialize functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar first
+            fetch('./components/navbar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('navbar-container').innerHTML = data;
+                    // Initialize auth after navbar is loaded
+                    if (typeof auth !== 'undefined') {
+                        auth.init();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading navbar:', error);
+                });
+                
+            // Initialize main functionality after DOM is fully loaded
+            if (typeof main !== 'undefined') {
+                // Small delay to ensure DOM is fully rendered
+                setTimeout(() => {
                     main.init();
-                }
-            })
-            .catch(error => {
-                console.error('Error loading navbar:', error);
-            });
+                }, 100);
+            }
+        });
 
         // Dig In function
         function digIn() {
@@ -95,20 +102,25 @@
         }
 
         // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const foodCards = document.querySelectorAll('.food-card');
-            
-            foodCards.forEach(card => {
-                const foodName = card.querySelector('h3').textContent.toLowerCase();
-                const foodRegion = card.querySelector('.region')?.textContent.toLowerCase() || '';
-                
-                if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const foodCards = document.querySelectorAll('.food-card');
+                    
+                    foodCards.forEach(card => {
+                        const foodName = card.querySelector('h3').textContent.toLowerCase();
+                        const foodRegion = card.querySelector('.region')?.textContent.toLowerCase() || '';
+                        
+                        if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
         });
     </script>
 </body>

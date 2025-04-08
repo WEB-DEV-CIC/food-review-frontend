@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="./css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="admin-body">
-       <!-- Navigation Bar -->
+    <!-- Navigation Bar -->
     <header>
         <div id="navbar-container"></div>
     </header>
@@ -111,17 +112,6 @@
                             <h3>Active Reports</h3>
                             <p id="activeReports">Loading...</p>
                         </div>
-                    </div>
-                </div>
-
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <h3>User Growth</h3>
-                        <canvas id="userGrowthChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Review Activity</h3>
-                        <canvas id="reviewActivityChart"></canvas>
                     </div>
                 </div>
 
@@ -315,20 +305,74 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="role" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <p>© 2025 FoodxBites. All rights reserved.</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="./js/function.js"></script>
+    <!-- Scripts -->
+    <script src="./js/api.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/admin.js"></script>
     <script>
-        fetch('./components/navbar.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
-            })
-            .catch(error => console.error('Error fetching navbar:', error));
-
+        // Load navbar and initialize functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar first
+            fetch('./components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('navbar-container').innerHTML = html;
+                    
+                    // Initialize auth after navbar is loaded
+                    if (window.auth) {
+                        window.auth.init();
+                        
+                        // Check if user is logged in
+                        const user = window.auth.getCurrentUser();
+                        if (!user) {
+                            console.log('No user found, redirecting to login page');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+                        
+                        // TEMPORARY: Allow all logged-in users to access admin page
+                        // Set user role to admin if not already
+                        if (user.role !== 'admin') {
+                            user.role = 'admin';
+                            localStorage.setItem('user', JSON.stringify(user));
+                            console.log('User role updated to admin');
+                        }
+                        
+                        // Initialize admin functionality if available
+                        if (window.admin) {
+                            window.admin.init();
+                        }
+                    } else {
+                        console.error('Auth module not loaded');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading navbar:', error);
+                });
+        });
     </script>
 </body>
 </html>

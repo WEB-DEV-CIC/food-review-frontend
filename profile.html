@@ -136,17 +136,30 @@
     <script src="./js/auth.js"></script>
     <script src="./js/profile.js"></script>
     <script>
-        // Load navbar
-        fetch('./components/navbar.html')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('navbar-container').innerHTML = html;
-                // Initialize auth after navbar is loaded
-                if (typeof auth !== 'undefined') {
-                    auth.init();
-                }
-            })
-            .catch(error => console.error('Error fetching navbar:', error));
+        // Load navbar and initialize functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar first
+            fetch('./components/navbar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('navbar-container').innerHTML = data;
+                    // Initialize auth after navbar is loaded
+                    if (typeof auth !== 'undefined') {
+                        auth.init();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading navbar:', error);
+                });
+                
+            // Initialize profile functionality after DOM is fully loaded
+            if (typeof profile !== 'undefined') {
+                // Small delay to ensure DOM is fully rendered
+                setTimeout(() => {
+                    profile.init();
+                }, 100);
+            }
+        });
 
         // Profile picture change
         document.getElementById('avatar-input').addEventListener('change', function(e) {

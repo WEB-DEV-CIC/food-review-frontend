@@ -21,9 +21,22 @@ const auth = {
         }
     },
     
+    // Get current user from localStorage
+    getCurrentUser() {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return null;
+        
+        try {
+            return JSON.parse(userStr);
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            return null;
+        }
+    },
+    
     // Check if we need to redirect based on current page
     checkPageRedirect() {
-        const user = localStorage.getItem('user');
+        const user = this.getCurrentUser();
         const currentPage = window.location.pathname.split('/').pop();
         
         // If user is logged in and on login/register page, redirect to home
@@ -41,7 +54,7 @@ const auth = {
 
     // Check if user is authenticated
     checkAuthStatus() {
-        const user = localStorage.getItem('user');
+        const user = this.getCurrentUser();
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
         const userDropdown = document.getElementById('userDropdown');
@@ -51,11 +64,10 @@ const auth = {
 
         if (user) {
             // User is logged in
-            const userData = JSON.parse(user);
             loginBtn.style.display = 'none';
             registerBtn.style.display = 'none';
             userDropdown.style.display = 'block';
-            userName.textContent = userData.name;
+            userName.textContent = user.name;
         } else {
             // User is not logged in
             loginBtn.style.display = 'block';
@@ -253,8 +265,9 @@ const auth = {
         })
         .then(data => {
             console.log('Login successful:', data);
-            // Store user data
+            // Store user data and token
             localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.token);
             
             // Redirect to appropriate page
             window.location.href = self.getRedirectUrl();
@@ -355,6 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     window.logout = auth.logout.bind(auth);
+    
+    // Make auth object available globally
+    window.auth = auth;
     
     // Initialize auth
     auth.init();

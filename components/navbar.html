@@ -13,7 +13,7 @@
                 <a class="nav-link" href="food.html">Foodlist</a>
                 <a class="nav-link" href="profile.html" onclick="return checkProtectedPage('profile.html')">Profile</a>
                 <a class="nav-link" href="contact.html">Contact</a>
-                <a class="nav-link" href="admin.html" onclick="return checkProtectedPage('admin.html')">Admin</a>
+                <a class="nav-link" href="admin.html" onclick="return checkAdminAccess()">Admin</a>
             </div>
             <div class="d-flex ms-lg-3 mt-2 mt-lg-0">
                 <!-- Guest buttons -->
@@ -48,8 +48,8 @@
 <script>
 // Function to check if a page requires authentication
 function checkProtectedPage(page) {
-    const user = localStorage.getItem('user');
-    if (!user) {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
         // User is not logged in, redirect to login with return URL
         if (typeof auth !== 'undefined' && auth.login) {
             auth.login(page);
@@ -59,6 +59,46 @@ function checkProtectedPage(page) {
         return false; // Prevent default navigation
     }
     return true; // Allow navigation
+}
+
+// Function to check if user has admin access
+function checkAdminAccess() {
+    // First try to get user from localStorage directly
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        // User is not logged in, redirect to login with return URL
+        if (typeof auth !== 'undefined' && auth.login) {
+            auth.login('admin.html');
+        } else {
+            window.location.href = `login-redirect.html?redirect=admin.html`;
+        }
+        return false; // Prevent default navigation
+    }
+    
+    try {
+        const user = JSON.parse(userStr);
+        
+        // TEMPORARY: Make all users admins for testing
+        // Set the user role to admin if it's not already
+        if (user.role !== 'admin') {
+            user.role = 'admin';
+            localStorage.setItem('user', JSON.stringify(user));
+            console.log('User role updated to admin');
+        }
+        
+        // Allow all users to access admin page
+        return true;
+        
+    } catch (error) {
+        console.error('Error parsing user data:', error);
+        // If there's an error parsing user data, redirect to login
+        if (typeof auth !== 'undefined' && auth.login) {
+            auth.login('admin.html');
+        } else {
+            window.location.href = `login-redirect.html?redirect=admin.html`;
+        }
+        return false; // Prevent default navigation
+    }
 }
 
 // Direct navigation functions

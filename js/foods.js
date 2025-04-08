@@ -1,112 +1,70 @@
-        // Foods page functionality
+        // Food list page functionality
         const foods = {
-            foodGrid: document.getElementById('foodGrid'),
-            searchInput: document.getElementById('searchInput'),
-            regionFilter: document.getElementById('regionFilter'),
-            tasteProfileFilter: document.getElementById('tasteProfileFilter'),
-            dietaryFilter: document.getElementById('dietaryFilter'),
-            prevPageBtn: document.getElementById('prevPage'),
-            nextPageBtn: document.getElementById('nextPage'),
-            currentPageSpan: document.getElementById('currentPage'),
-            totalPagesSpan: document.getElementById('totalPages'),
-            currentPage: 1,
-            totalPages: 1,
-            filters: {
-                search: '',
-                region: '',
-                tasteProfile: '',
-                dietaryRestrictions: ''
-            },
+            foodGrid: null,
 
             async init() {
+                console.log('Initializing foods list functionality');
                 try {
+                    // Check if foodGrid element exists
+                    if (!this.foodGrid) {
+                        console.log('Food grid container not found, retrying...');
+                        this.foodGrid = document.getElementById('featuredFoods');
+                        if (!this.foodGrid) {
+                            console.error('Food grid container still not found after retry');
+                            return;
+                        }
+                    }
+                    
+                    // Check if API is available
+                    if (!window.api || !window.api.food) {
+                        console.error('API or food API not available');
+                        this.showError('API not available. Please check console for details.');
+                        return;
+                    }
+                    
+                    console.log('Loading foods...');
                     await this.loadFoods();
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error('Error initializing foods page:', error);
-                    this.showError('Failed to load foods. Please try again later.');
-                }
-            },
-
-            setupEventListeners() {
-                // Search input with debounce
-                let searchTimeout;
-                this.searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.filters.search = e.target.value;
-                        this.currentPage = 1;
-                        this.loadFoods();
-                    }, 300);
-                });
-
-                // Filter change handlers
-                this.regionFilter.addEventListener('change', (e) => {
-                    this.filters.region = e.target.value;
-                    this.currentPage = 1;
-                    this.loadFoods();
-                });
-
-                this.tasteProfileFilter.addEventListener('change', (e) => {
-                    this.filters.tasteProfile = e.target.value;
-                    this.currentPage = 1;
-                    this.loadFoods();
-                });
-
-                this.dietaryFilter.addEventListener('change', (e) => {
-                    this.filters.dietaryRestrictions = e.target.value;
-                    this.currentPage = 1;
-                    this.loadFoods();
-                });
-
-                // Pagination handlers
-                this.prevPageBtn.addEventListener('click', () => {
-                    if (this.currentPage > 1) {
-                        this.currentPage--;
-                        this.loadFoods();
-                    }
-                });
-
-                this.nextPageBtn.addEventListener('click', () => {
-                    if (this.currentPage < this.totalPages) {
-                        this.currentPage++;
-                        this.loadFoods();
-                    }
-                });
-            },
-
-            async loadFoods() {
-                try {
-                    const params = {
-                        page: this.currentPage,
-                        limit: 12,
-                        ...this.filters
-                    };
-
-                    const response = await window.api.food.getAll(params);
-                    if (response && response.foods) {
-                        this.totalPages = response.totalPages || 1;
-                        this.updatePaginationControls();
-                        this.renderFoods(response.foods);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                    console.log('Foods loaded successfully');
                 } catch (error) {
                     console.error('Error loading foods:', error);
                     this.showError('Failed to load foods. Please try again later.');
                 }
             },
 
-            updatePaginationControls() {
-                this.currentPageSpan.textContent = this.currentPage;
-                this.totalPagesSpan.textContent = this.totalPages;
-                this.prevPageBtn.disabled = this.currentPage === 1;
-                this.nextPageBtn.disabled = this.currentPage === this.totalPages;
+            async loadFoods() {
+                try {
+                    console.log('Calling API to get foods');
+                    
+                    // Check if API is available
+                    if (!window.api || !window.api.food) {
+                        console.error('API or food API not available');
+                        this.showError('API not available');
+                        return;
+                    }
+                    
+                    const response = await window.api.food.getAll();
+                    console.log('API response:', response);
+                    
+                    if (response && response.foods) {
+                        console.log(`Rendering ${response.foods.length} food items`);
+                        this.renderFoods(response.foods);
+                    } else {
+                        console.error('Invalid response format:', response);
+                        this.showError('Invalid response from server');
+                    }
+                } catch (error) {
+                    console.error('Error loading foods:', error);
+                    this.showError('Failed to load foods');
+                }
             },
 
             renderFoods(foods) {
+                if (!this.foodGrid) {
+                    console.error('Food grid container not found');
+                    return;
+                }
                 if (!foods || !Array.isArray(foods) || foods.length === 0) {
-                    this.showError('No food items found matching your criteria.');
+                    this.showError('No food items available.');
                     return;
                 }
 
@@ -142,7 +100,7 @@
                                         ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
                                     </div>
                                 ` : ''}
-                                <a href="food.html?id=${food._id}" class="button">View Details</a>
+                                <a href="food-details.html?id=${food._id}" class="button">View Details</a>
                             </div>
                         </div>
                     `;
@@ -176,6 +134,10 @@
 
         // Initialize the foods page
         document.addEventListener('DOMContentLoaded', () => {
+            // Try to find the food grid element
+            foods.foodGrid = document.getElementById('featuredFoods');
+            
+            // Initialize foods functionality
             if (foods.foodGrid) {
                 foods.init();
             } else {

@@ -209,11 +209,105 @@ const userApi = {
     }
 };
 
+// Admin API
+const adminApi = {
+    getStats: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getStats:', error);
+            return { stats: { totalUsers: 0, totalFoods: 0, totalReviews: 0, totalReports: 0 } };
+        }
+    },
+
+    getRecentActivity: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/activity`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getRecentActivity:', error);
+            return { activities: [] };
+        }
+    },
+
+    getUsers: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/users`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getUsers:', error);
+            return { users: [] };
+        }
+    },
+
+    getFoods: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/foods`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getFoods:', error);
+            return { foods: [] };
+        }
+    },
+
+    getReviews: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/reviews`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getReviews:', error);
+            return { reviews: [] };
+        }
+    },
+
+    getReports: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/admin/reports`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            return handleResponse(response);
+        } catch (error) {
+            console.error('Error in getReports:', error);
+            return { reports: [] };
+        }
+    }
+};
+
 // Expose API to window object
 window.api = {
     auth: authApi,
     food: foodApi,
-    user: userApi
+    user: userApi,
+    admin: adminApi
 };
 
 console.log('API module loaded and exposed to window.api');

@@ -1,16 +1,16 @@
 // Main page functionality
 const main = {
-    featuredFoods: document.getElementById('featuredFoods'),
+    featuredFoods: null,
 
     async init() {
         console.log('Initializing main functionality');
         try {
             // Check if featuredFoods element exists
             if (!this.featuredFoods) {
-                console.error('Featured foods container not found in DOM');
+                console.log('Featured foods container not found, retrying...');
                 this.featuredFoods = document.getElementById('featuredFoods');
                 if (!this.featuredFoods) {
-                    console.error('Still cannot find featuredFoods element after retry');
+                    console.error('Featured foods container still not found after retry');
                     return;
                 }
             }
@@ -102,7 +102,7 @@ const main = {
                                 ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
                             </div>
                         ` : ''}
-                        <a href="food.html?id=${food._id}" class="button">View Details</a>
+                        <a href="food-details.html?id=${food._id}" class="button">View Details</a>
                     </div>
                 </div>
             `;
@@ -169,9 +169,15 @@ const main = {
 
 // Initialize the main page
 document.addEventListener('DOMContentLoaded', () => {
-    if (main.featuredFoods) {
-        main.init();
-    } else {
-        console.error('Featured foods container not found');
+    // Try to find the featuredFoods element
+    main.featuredFoods = document.getElementById('featuredFoods');
+    
+    // If we're on the index page, initialize main functionality
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
+        if (main.featuredFoods) {
+            main.init();
+        } else {
+            console.error('Featured foods container not found');
+        }
     }
 });
