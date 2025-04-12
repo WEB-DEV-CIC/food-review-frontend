@@ -20,7 +20,7 @@
         <div class="container">
             <div class="profile-wrapper">
                 <!-- Profile Header -->
-                <div class="profile-header">
+            <div class="profile-header">
                     <div class="profile-cover">
                         <div class="profile-avatar">
                             <img src="profile.jpg" alt="Profile Picture" id="profile-picture">
@@ -84,8 +84,8 @@
                                         <span id="bio">Food lover and restaurant reviewer</span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                </div>
+            </div>
 
                         <!-- Address Information -->
                         <div class="col-12 col-md-6">
@@ -111,8 +111,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                </div>
+            </div> 
 
                     <!-- Recent Activity -->
                     <div class="profile-card mt-3">
@@ -139,8 +139,8 @@
         // Load navbar and initialize functionality
         document.addEventListener('DOMContentLoaded', () => {
             // Load navbar first
-            fetch('./components/navbar.html')
-                .then(response => response.text())
+        fetch('./components/navbar.html')
+            .then(response => response.text())
                 .then(data => {
                     document.getElementById('navbar-container').innerHTML = data;
                     // Initialize auth after navbar is loaded

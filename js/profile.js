@@ -98,29 +98,54 @@ const profile = {
     async loadUserReviews() {
         try {
             // Check if API is available
-            if (!window.api || !window.api.user) {
-                console.error('User API not available');
+            if (!window.api || !window.api.review) {
+                console.warn('Review API not available, using fallback data');
+                this.loadFallbackData();
                 return;
             }
             
             // Get user ID from localStorage
             const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData || !userData._id) {
+            if (!userData || !userData.id) {
                 console.error('User ID not found');
+                this.loadFallbackData();
                 return;
             }
             
-            // Fetch user reviews
-            const response = await window.api.user.getReviews(userData._id);
-            console.log('User reviews:', response);
+            // Fetch all reviews and filter by user ID
+            const response = await window.api.review.getAll();
+            console.log('All reviews:', response);
+            
+            // Filter reviews by user ID
+            const userReviews = response.reviews ? 
+                response.reviews.filter(review => review.userId === userData.id) : 
+                [];
             
             // Update review count
-            if (response && response.reviews) {
-                document.querySelector('.stat:nth-child(1) .stat-value').textContent = response.reviews.length;
+            const reviewCountElement = document.querySelector('.stat:nth-child(1) .stat-value');
+            if (reviewCountElement) {
+                reviewCountElement.textContent = userReviews.length;
+            }
+            
+            // Update reviews list if available
+            const reviewsList = document.querySelector('.reviews-list');
+            if (reviewsList) {
+                if (userReviews.length === 0) {
+                    reviewsList.innerHTML = '<p class="text-muted">No reviews yet</p>';
+                } else {
+                    reviewsList.innerHTML = userReviews.map(review => `
+                        <div class="review-item">
+                            <h4>${review.foodName || 'Unknown Food'}</h4>
+                            <p>${review.comment || 'No comment'}</p>
+                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                        </div>
+                    `).join('');
+                }
             }
             
         } catch (error) {
             console.error('Error loading user reviews:', error);
+            this.loadFallbackData();
         }
     },
     
@@ -128,27 +153,54 @@ const profile = {
     async loadUserActivity() {
         try {
             // Check if API is available
-            if (!window.api || !window.api.user) {
-                console.error('User API not available');
+            if (!window.api || !window.api.review) {
+                console.warn('Review API not available, using fallback data');
+                this.loadFallbackData();
                 return;
             }
             
             // Get user ID from localStorage
             const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData || !userData._id) {
+            if (!userData || !userData.id) {
                 console.error('User ID not found');
+                this.loadFallbackData();
                 return;
             }
             
-            // Fetch user activity
-            const response = await window.api.user.getActivity(userData._id);
-            console.log('User activity:', response);
+            // Fetch all reviews and filter by user ID
+            const response = await window.api.review.getAll();
+            console.log('All reviews:', response);
+            
+            // Filter reviews by user ID and sort by date
+            const userReviews = response.reviews ? 
+                response.reviews
+                    .filter(review => review.userId === userData.id)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : 
+                [];
             
             // Update activity list
-            this.renderActivityList(response);
+            const activityList = document.querySelector('.activity-list');
+            if (activityList) {
+                if (userReviews.length === 0) {
+                    activityList.innerHTML = '<p class="text-muted">No recent activity</p>';
+                } else {
+                    activityList.innerHTML = userReviews.map(review => `
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>Reviewed ${review.foodName || 'a food item'}</p>
+                                <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
             
         } catch (error) {
             console.error('Error loading user activity:', error);
+            this.loadFallbackData();
         }
     },
     

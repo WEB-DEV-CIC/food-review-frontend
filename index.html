@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover the best meals and restaurants with FoodxBites - Your ultimate food review platform">
-    <title>FoodxBites - Discover Amazing Food</title>
+    <meta name="description" content="Discover and review amazing foods on FoodxBites - Your ultimate food review platform">
+    <title>FoodxBites - Discover Amazing Foods</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./css/styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
@@ -21,29 +20,46 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="container">
-                <h1>Discover the best meal that does wonder to your taste buds</h1>
-                <p>With over 1000+ restaurants to choose from, we present to you a taste you would never forget.</p>
-                <a class="btn" id="digIn" onclick="digIn()" href="food.html">
-                    <i class="fas fa-utensils"></i> DIG IN
-                </a>
-            </div>
-        </section>
-
-        <!-- Search Section -->
-        <section class="search-section">
-            <div class="container">
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search foods...">
+                <div class="hero-content">
+                    <h1>Discover Culinary Delights</h1>
+                    <p class="lead">Explore authentic flavors, read honest reviews, and find your next favorite dish.</p>
+                    <div class="hero-buttons">
+                        <a class="btn btn-primary" href="food.html">
+                            <i class="fas fa-utensils"></i> Browse Foods
+                        </a>
+                        <a class="btn btn-outline-light" href="contact.html">
+                            <i class="fas fa-envelope"></i> Contact Us
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Foods Section -->
-        <section class="featured-foods">
+        <!-- Features Section -->
+        <section class="features">
             <div class="container">
-                <h2 class="section-title">Featured Foods</h2>
-                <div class="food-grid" id="featuredFoods">
-                    <!-- Foods will be loaded here dynamically -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-star"></i>
+                            <h3>Honest Reviews</h3>
+                            <p>Read authentic reviews from real food enthusiasts.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-search"></i>
+                            <h3>Easy Discovery</h3>
+                            <p>Find your perfect meal with our advanced search.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Community</h3>
+                            <p>Join a community of food lovers and share your experiences.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -53,12 +69,24 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2024 FoodxBites. All rights reserved.</p>
+                <div class="footer-logo">
+                    <h3>FoodxBites</h3>
+                    <p>Your trusted food review platform</p>
+                </div>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="food.html">Foods</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="profile.html">Profile</a>
+                </div>
                 <div class="social-links">
                     <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
                     <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 FoodxBites. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -66,10 +94,8 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./js/api.js"></script>
-    <script src="./js/api-test.js"></script>
     <script src="./js/auth.js"></script>
     <script src="./js/main.js"></script>
-    <script src="./js/test.js"></script>
     <script>
         // Load navbar and initialize functionality
         document.addEventListener('DOMContentLoaded', () => {
@@ -86,41 +112,6 @@
                 .catch(error => {
                     console.error('Error loading navbar:', error);
                 });
-                
-            // Initialize main functionality after DOM is fully loaded
-            if (typeof main !== 'undefined') {
-                // Small delay to ensure DOM is fully rendered
-                setTimeout(() => {
-                    main.init();
-                }, 100);
-            }
-        });
-
-        // Dig In function
-        function digIn() {
-            window.location.href = './food.html';
-        }
-
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const foodCards = document.querySelectorAll('.food-card');
-                    
-                    foodCards.forEach(card => {
-                        const foodName = card.querySelector('h3').textContent.toLowerCase();
-                        const foodRegion = card.querySelector('.region')?.textContent.toLowerCase() || '';
-                        
-                        if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            }
         });
     </script>
 </body>

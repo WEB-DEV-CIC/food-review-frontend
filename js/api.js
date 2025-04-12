@@ -1,313 +1,294 @@
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+// API module
+const api = {
+    // Base URL
+    baseUrl: 'http://localhost:5000/api/v1',
 
-// Helper function to handle API responses
-const handleResponse = async (response) => {
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
-    }
-    try {
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error('Invalid JSON response from server');
-    }
-};
-
-// Auth API
-const authApi = {
-    login: async (email, password) => {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        });
-        return handleResponse(response);
-    },
-
-    register: async (name, email, password) => {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password }),
-        });
-        return handleResponse(response);
-    },
-
-    logout: async () => {
+    // Headers
+    getHeaders() {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        return handleResponse(response);
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
     },
-};
 
-// Food API
-const foodApi = {
-    getAll: async (params = {}) => {
-        try {
-            console.log('Food API: getAll called with params:', params);
-            const queryString = new URLSearchParams({
-                page: params.page || 1,
-                limit: params.limit || 10,
-                ...params
-            }).toString();
-            console.log('Food API: Request URL:', `${API_BASE_URL}/foods?${queryString}`);
-            const response = await fetch(`${API_BASE_URL}/foods?${queryString}`);
-            const data = await handleResponse(response);
-            console.log('Food API: Response data:', data);
-            if (!data || !data.foods) {
-                throw new Error('Invalid response format: missing foods array');
+    // Admin endpoints
+    admin: {
+        async getStats() {
+            const response = await fetch(`${api.baseUrl}/admin/stats`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch stats');
+            return response.json();
+        },
+
+        async getFoods() {
+            try {
+                console.log('Making request to:', `${api.baseUrl}/admin/foods`);
+                const response = await fetch(`${api.baseUrl}/admin/foods`, {
+                    headers: api.getHeaders()
+                });
+                
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`Failed to fetch foods: ${response.status} ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Parsed response data:', data);
+                return data;
+            } catch (error) {
+                console.error('Error in getFoods:', error);
+                throw error;
             }
-            return data;
-        } catch (error) {
-            console.error('Error in getAll:', error);
-            throw error;
+        },
+
+        async updateFood(id, foodData) {
+            try {
+                console.log('Updating food with ID:', id);
+                console.log('Food data:', foodData);
+                
+                const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
+                    method: 'PUT',
+                    headers: api.getHeaders(),
+                    body: JSON.stringify(foodData)
+                });
+                
+                console.log('Update response status:', response.status);
+                const data = await response.json();
+                console.log('Update response data:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to update food');
+                }
+                
+                return {
+                    success: true,
+                    food: data
+                };
+            } catch (error) {
+                console.error('Error updating food:', error);
+                return {
+                    success: false,
+                    message: error.message
+                };
+            }
+        },
+
+        async deleteFood(id) {
+            const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
+                method: 'DELETE',
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to delete food');
+            return response.json();
+        },
+
+        async getReviews() {
+            const response = await fetch(`${api.baseUrl}/admin/reviews`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch reviews');
+            return response.json();
+        },
+
+        async deleteReview(id) {
+            const response = await fetch(`${api.baseUrl}/admin/reviews/${id}`, {
+                method: 'DELETE',
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to delete review');
+            return response.json();
         }
     },
 
-    getById: async (id) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/foods/${id}`);
-            const data = await handleResponse(response);
-            if (!data) {
-                throw new Error('Food not found');
+    // Food endpoints
+    food: {
+        async getAll() {
+            try {
+                console.log('Fetching all foods...');
+                const response = await fetch(`${api.baseUrl}/foods`, {
+                    headers: api.getHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Foods data:', data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching foods:', error);
+                throw error;
             }
-            return data;
-        } catch (error) {
-            console.error('Error in getById:', error);
-            throw error;
-        }
-    },
+        },
 
-    getReviews: async (foodId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/foods/${foodId}/reviews`);
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getReviews:', error.message);
-            return { reviews: [] };
-        }
-    },
+        async getById(id) {
+            const response = await fetch(`${api.baseUrl}/foods/${id}`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch food');
+            return response.json();
+        },
 
-    addReview: async (foodId, rating, comment) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Authentication required');
+        async addReview(foodId, rating, comment) {
+            try {
+                console.log('Submitting review for food:', foodId);
+                const response = await fetch(`${api.baseUrl}/foods/${foodId}/reviews`, {
+                    method: 'POST',
+                    headers: api.getHeaders(),
+                    body: JSON.stringify({ rating, comment })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to submit review');
+                }
+                
+                const data = await response.json();
+                console.log('Review submitted successfully:', data);
+                return data;
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                throw error;
             }
-            const response = await fetch(`${API_BASE_URL}/foods/${foodId}/reviews`, {
+        },
+
+        async create(foodData) {
+            const response = await fetch(`${api.baseUrl}/foods`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ rating, comment }),
+                headers: api.getHeaders(),
+                body: JSON.stringify(foodData)
             });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in addReview:', error);
-            throw error;
-        }
-    },
-};
+            if (!response.ok) throw new Error('Failed to create food');
+            return response.json();
+        },
 
-// User API
-const userApi = {
-    getProfile: async (userId) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getProfile:', error);
-            throw error;
-        }
-    },
-    
-    updateProfile: async (userId, profileData) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        async update(id, foodData) {
+            const response = await fetch(`${api.baseUrl}/foods/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(profileData),
+                headers: api.getHeaders(),
+                body: JSON.stringify(foodData)
             });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in updateProfile:', error);
-            throw error;
+            if (!response.ok) throw new Error('Failed to update food');
+            return response.json();
+        },
+
+        async delete(id) {
+            const response = await fetch(`${api.baseUrl}/foods/${id}`, {
+                method: 'DELETE',
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to delete food');
+            return response.json();
         }
     },
-    
-    getReviews: async (userId) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/users/${userId}/reviews`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
+
+    // Review endpoints
+    review: {
+        async getAll() {
+            const response = await fetch(`${api.baseUrl}/reviews`, {
+                headers: api.getHeaders()
             });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getReviews:', error);
-            return { reviews: [] };
+            if (!response.ok) throw new Error('Failed to fetch reviews');
+            return response.json();
+        },
+
+        async getById(id) {
+            const response = await fetch(`${api.baseUrl}/reviews/${id}`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch review');
+            return response.json();
+        },
+
+        async create(reviewData) {
+            const response = await fetch(`${api.baseUrl}/reviews`, {
+                method: 'POST',
+                headers: api.getHeaders(),
+                body: JSON.stringify(reviewData)
+            });
+            if (!response.ok) throw new Error('Failed to create review');
+            return response.json();
+        },
+
+        async update(id, reviewData) {
+            const response = await fetch(`${api.baseUrl}/reviews/${id}`, {
+                method: 'PUT',
+                headers: api.getHeaders(),
+                body: JSON.stringify(reviewData)
+            });
+            if (!response.ok) throw new Error('Failed to update review');
+            return response.json();
+        },
+
+        async delete(id) {
+            const response = await fetch(`${api.baseUrl}/reviews/${id}`, {
+                method: 'DELETE',
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to delete review');
+            return response.json();
         }
     },
-    
-    getActivity: async (userId) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/users/${userId}/activity`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
+
+    // User endpoints
+    user: {
+        async getProfile(userId) {
+            const response = await fetch(`${api.baseUrl}/users/${userId}`, {
+                headers: api.getHeaders()
             });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getActivity:', error);
-            return [];
-        }
-    },
-    
-    uploadProfilePicture: async (userId, file) => {
-        try {
-            const token = localStorage.getItem('token');
+            if (!response.ok) throw new Error('Failed to fetch user profile');
+            return response.json();
+        },
+
+        async updateProfile(userId, profileData) {
+            const response = await fetch(`${api.baseUrl}/users/${userId}`, {
+                method: 'PUT',
+                headers: api.getHeaders(),
+                body: JSON.stringify(profileData)
+            });
+            if (!response.ok) throw new Error('Failed to update user profile');
+            return response.json();
+        },
+
+        async getReviews(userId) {
+            const response = await fetch(`${api.baseUrl}/users/${userId}/reviews`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch user reviews');
+            return response.json();
+        },
+
+        async getActivity(userId) {
+            const response = await fetch(`${api.baseUrl}/users/${userId}/activity`, {
+                headers: api.getHeaders()
+            });
+            if (!response.ok) throw new Error('Failed to fetch user activity');
+            return response.json();
+        },
+
+        async uploadProfilePicture(userId, file) {
             const formData = new FormData();
             formData.append('profilePicture', file);
-            
-            const response = await fetch(`${API_BASE_URL}/users/${userId}/profile-picture`, {
+
+            const response = await fetch(`${api.baseUrl}/users/${userId}/profile-picture`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': api.getHeaders().Authorization
                 },
-                body: formData,
+                body: formData
             });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in uploadProfilePicture:', error);
-            throw error;
+            if (!response.ok) throw new Error('Failed to upload profile picture');
+            return response.json();
         }
     }
 };
 
-// Admin API
-const adminApi = {
-    getStats: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/stats`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getStats:', error);
-            return { stats: { totalUsers: 0, totalFoods: 0, totalReviews: 0, totalReports: 0 } };
-        }
-    },
-
-    getRecentActivity: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/activity`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getRecentActivity:', error);
-            return { activities: [] };
-        }
-    },
-
-    getUsers: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/users`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getUsers:', error);
-            return { users: [] };
-        }
-    },
-
-    getFoods: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/foods`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getFoods:', error);
-            return { foods: [] };
-        }
-    },
-
-    getReviews: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/reviews`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getReviews:', error);
-            return { reviews: [] };
-        }
-    },
-
-    getReports: async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/admin/reports`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('Error in getReports:', error);
-            return { reports: [] };
-        }
-    }
-};
-
-// Expose API to window object
-window.api = {
-    auth: authApi,
-    food: foodApi,
-    user: userApi,
-    admin: adminApi
-};
+// Make api object globally available
+window.api = api;
 
 console.log('API module loaded and exposed to window.api');

@@ -47,20 +47,29 @@
     <script src="js/auth.js"></script>
     <script>
         // Load navbar and initialize functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load navbar first
-            fetch('./components/navbar.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('navbar-container').innerHTML = data;
-                    // Initialize auth after navbar is loaded
-                    if (typeof auth !== 'undefined') {
-                        auth.init();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading navbar:', error);
-                });
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('Starting login page initialization...');
+                
+                // Load navbar first
+                const navbarResponse = await fetch('./components/navbar.html');
+                if (!navbarResponse.ok) throw new Error('Failed to load navbar');
+                const navbarHtml = await navbarResponse.text();
+                document.getElementById('navbar-container').innerHTML = navbarHtml;
+                
+                // Initialize auth
+                if (typeof auth !== 'undefined') {
+                    console.log('Initializing auth...');
+                    await auth.init();
+                    console.log('Auth initialized');
+                } else {
+                    console.error('Auth module not loaded');
+                }
+                
+                console.log('Login page initialization complete');
+            } catch (error) {
+                console.error('Error during login page initialization:', error);
+            }
         });
     </script>
 </body>

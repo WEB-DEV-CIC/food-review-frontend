@@ -1,429 +1,483 @@
-// Admin Dashboard functionality
-const admin = {
-    // State management
-    state: {
-        currentSection: 'dashboard',
-        dateRange: 'month',
-        data: {
-            users: [],
-            foods: [],
-            reviews: [],
-            reports: []
+// Admin functionality
+const Admin = (function() {
+    let instance = null;
+
+    class AdminClass {
+        constructor() {
+            if (instance) return instance;
+            instance = this;
+
+            this.state = {
+                data: {
+                    dashboard: null,
+                    foods: [],
+                    reviews: []
+                },
+                loading: {
+                    dashboard: false,
+                    foods: false,
+                    reviews: false
+                }
+            };
+
+            // Bind methods to instance
+            this.init = this.init.bind(this);
+            this.initializeEventListeners = this.initializeEventListeners.bind(this);
+            this.switchSection = this.switchSection.bind(this);
+            this.loadDashboardData = this.loadDashboardData.bind(this);
+            this.updateDashboardStats = this.updateDashboardStats.bind(this);
+            this.loadFoods = this.loadFoods.bind(this);
+            this.renderFoods = this.renderFoods.bind(this);
+            this.showError = this.showError.bind(this);
+            this.handleAddFood = this.handleAddFood.bind(this);
+            this.handleEditFood = this.handleEditFood.bind(this);
+            this.handleDeleteFood = this.handleDeleteFood.bind(this);
         }
-    },
 
-    // Initialize the admin dashboard
-    async init() {
-        try {
-            // Check if auth is available
-            if (!window.auth) {
-                console.error('Auth module not loaded');
-                this.showError('Authentication module not loaded');
-                return;
+        async init() {
+            try {
+                console.log('Initializing admin panel...');
+                
+                // Check admin access
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (user.role !== 'admin') {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                
+                // Initialize event listeners
+                this.initializeEventListeners();
+                
+                // Load initial data
+                await this.loadDashboardData();
+                await this.loadFoods();
+                
+                // Show initial section based on hash
+                const currentHash = window.location.hash.substring(1) || 'dashboard';
+                this.switchSection(currentHash);
+                
+                console.log('Admin panel initialized successfully');
+            } catch (error) {
+                console.error('Error initializing admin panel:', error);
+                this.showError('Failed to initialize admin panel');
             }
-
-            // Check if user is logged in
-            const user = window.auth.getCurrentUser();
-            if (!user) {
-                console.log('No user found, redirecting to login page');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // TEMPORARY: Allow all logged-in users to access admin page
-            // Set user role to admin if not already
-            if (user.role !== 'admin') {
-                user.role = 'admin';
-                localStorage.setItem('user', JSON.stringify(user));
-                console.log('User role updated to admin');
-            }
-
-            // Initialize components
-            this.initializeSidebar();
-            this.loadDashboardData();
-            this.initializeEventListeners();
-        } catch (error) {
-            console.error('Error initializing admin dashboard:', error);
-            this.showError('Failed to initialize admin dashboard');
         }
-    },
-
-    // Initialize sidebar navigation
-    initializeSidebar() {
-        const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = link.getAttribute('data-section');
+        
+        initializeEventListeners() {
+            console.log('Initializing admin event listeners...');
+            
+            // Handle hash changes
+            window.addEventListener('hashchange', () => {
+                const section = window.location.hash.substring(1) || 'dashboard';
                 this.switchSection(section);
             });
-        });
-    },
+            
+            // Add food form
+            const addFoodForm = document.getElementById('addFoodForm');
+            if (addFoodForm) {
+                addFoodForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleAddFood();
+                });
+            }
 
-    // Switch between sections
-    switchSection(section) {
-        // Update active states
-        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => link.classList.remove('active'));
+            // Save food button
+            const saveFoodBtn = document.getElementById('saveFoodBtn');
+            if (saveFoodBtn) {
+                saveFoodBtn.addEventListener('click', () => {
+                    this.handleAddFood();
+                });
+            }
+            
+            // Search input
+            const searchInput = document.getElementById('foodSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+            }
+
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                });
+            }
+            
+            console.log('Admin event listeners initialized');
+        }
         
-        document.getElementById(section).classList.add('active');
-        document.querySelector(`[data-section="${section}"]`).classList.add('active');
+        switchSection(sectionId) {
+            console.log(`Switching to section: ${sectionId}`);
+            
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+            
+            // Show the selected section
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.classList.add('active');
+                target.style.display = 'block';
+            }
+            
+            // Update active link
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                const linkHash = link.getAttribute('href');
+                link.classList.toggle('active', linkHash === `#${sectionId}`);
+            });
+            
+            // Load section data if needed
+            switch (sectionId) {
+                case 'dashboard':
+                    this.loadDashboardData();
+                    break;
+                case 'foods':
+                    this.loadFoods();
+                    break;
+                case 'reviews':
+                    this.loadReviews();
+                    break;
+            }
+        }
         
-        this.state.currentSection = section;
-        this.loadSectionData(section);
-    },
-
-    // Load dashboard data
-    async loadDashboardData() {
-        try {
-            // Load statistics
-            const stats = await this.fetchDashboardStats();
-            this.updateDashboardStats(stats);
-
-            // Load recent activity
-            const activities = await this.fetchRecentActivity();
-            this.updateRecentActivity(activities);
-        } catch (error) {
-            console.error('Error loading dashboard data:', error);
-            this.showError('Failed to load dashboard data');
-        }
-    },
-
-    // Fetch dashboard statistics
-    async fetchDashboardStats() {
-        try {
-            const response = await window.api.admin.getStats();
-            return response.stats;
-        } catch (error) {
-            console.error('Error fetching dashboard stats:', error);
-            throw error;
-        }
-    },
-
-    // Update dashboard statistics
-    updateDashboardStats(stats) {
-        document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-        document.getElementById('totalFoods').textContent = stats.totalFoods || 0;
-        document.getElementById('totalReviews').textContent = stats.totalReviews || 0;
-        document.getElementById('activeReports').textContent = stats.totalReports || 0;
-    },
-
-    // Fetch recent activity
-    async fetchRecentActivity() {
-        try {
-            const response = await window.api.admin.getRecentActivity();
-            return response.activities;
-        } catch (error) {
-            console.error('Error fetching recent activity:', error);
-            throw error;
-        }
-    },
-
-    // Update recent activity list
-    updateRecentActivity(activities) {
-        const container = document.getElementById('recentActivityList');
-        if (!container) return;
-
-        container.innerHTML = activities.map(activity => `
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="fas ${this.getActivityIcon(activity.type)}"></i>
-                </div>
-                <div class="activity-content">
-                    <p>${activity.description}</p>
-                    <small>${this.formatDate(activity.timestamp)}</small>
-                </div>
-            </div>
-        `).join('');
-    },
-
-    // Get icon for activity type
-    getActivityIcon(type) {
-        const icons = {
-            user: 'fa-user',
-            food: 'fa-utensils',
-            review: 'fa-star',
-            report: 'fa-flag'
-        };
-        return icons[type] || 'fa-info-circle';
-    },
-
-    // Format date
-    formatDate(timestamp) {
-        return new Date(timestamp).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    },
-
-    // Load section data
-    async loadSectionData(section) {
-        switch (section) {
-            case 'users':
-                await this.loadUsers();
-                break;
-            case 'foods':
-                await this.loadFoods();
-                break;
-            case 'reviews':
-                await this.loadReviews();
-                break;
-            case 'reports':
-                await this.loadReports();
-                break;
-            case 'settings':
-                await this.loadSettings();
-                break;
-        }
-    },
-
-    // Load users data
-    async loadUsers() {
-        try {
-            const response = await window.api.admin.getUsers();
-            this.state.data.users = response.users;
-            this.renderUsers();
-        } catch (error) {
-            console.error('Error loading users:', error);
-            throw error;
-        }
-    },
-
-    // Render users table
-    renderUsers() {
-        const tbody = document.getElementById('usersTableBody');
-        tbody.innerHTML = this.state.data.users.map(user => `
-            <tr>
-                <td>${user._id}</td>
-                <td>${user.name}</td>
-                <td>${user.email}</td>
-                <td>${user.role}</td>
-                <td>
-                    <span class="status-badge status-${user.status}">
-                        ${user.status}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view" onclick="admin.viewUser('${user._id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit" onclick="admin.editUser('${user._id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="admin.deleteUser('${user._id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    // Load foods data
-    async loadFoods() {
-        try {
-            const response = await window.api.admin.getFoods();
-            this.state.data.foods = response.foods;
-            this.renderFoods();
-        } catch (error) {
-            console.error('Error loading foods:', error);
-            throw error;
-        }
-    },
-
-    // Render foods table
-    renderFoods() {
-        const tbody = document.getElementById('foodsTableBody');
-        tbody.innerHTML = this.state.data.foods.map(food => `
-            <tr>
-                <td>${food._id}</td>
-                <td>${food.name}</td>
-                <td>${food.region}</td>
-                <td>${food.rating.toFixed(1)}</td>
-                <td>${food.reviewCount}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view" onclick="admin.viewFood('${food._id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit" onclick="admin.editFood('${food._id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="admin.deleteFood('${food._id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    // Load reviews data
-    async loadReviews() {
-        try {
-            const response = await window.api.admin.getReviews();
-            this.state.data.reviews = response.reviews;
-            this.renderReviews();
-        } catch (error) {
-            console.error('Error loading reviews:', error);
-            throw error;
-        }
-    },
-
-    // Render reviews table
-    renderReviews() {
-        const tbody = document.getElementById('reviewsTableBody');
-        tbody.innerHTML = this.state.data.reviews.map(review => `
-            <tr>
-                <td>${review._id}</td>
-                <td>${review.user.name}</td>
-                <td>${review.food.name}</td>
-                <td>${review.rating}</td>
-                <td>
-                    <span class="status-badge status-${review.status}">
-                        ${review.status}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view" onclick="admin.viewReview('${review._id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit" onclick="admin.editReview('${review._id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="admin.deleteReview('${review._id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    // Load reports data
-    async loadReports() {
-        try {
-            const response = await window.api.admin.getReports();
-            this.state.data.reports = response.reports;
-            this.renderReports();
-        } catch (error) {
-            console.error('Error loading reports:', error);
-            throw error;
-        }
-    },
-
-    // Render reports table
-    renderReports() {
-        const tbody = document.getElementById('reportsTableBody');
-        tbody.innerHTML = this.state.data.reports.map(report => `
-            <tr>
-                <td>${report._id}</td>
-                <td>${report.type}</td>
-                <td>${report.reportedBy.name}</td>
-                <td>
-                    <span class="status-badge status-${report.status}">
-                        ${report.status}
-                    </span>
-                </td>
-                <td>${this.formatDate(report.createdAt)}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view" onclick="admin.viewReport('${report._id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit" onclick="admin.handleReport('${report._id}')">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    // Load settings data
-    async loadSettings() {
-        try {
-            const response = await window.api.admin.getSettings();
-            this.populateSettingsForms(response.settings);
-        } catch (error) {
-            console.error('Error loading settings:', error);
-            throw error;
-        }
-    },
-
-    // Populate settings forms
-    populateSettingsForms(settings) {
-        // General Settings
-        document.getElementById('siteName').value = settings.siteName;
-        document.getElementById('adminEmail').value = settings.adminEmail;
-
-        // Security Settings
-        document.getElementById('sessionTimeout').value = settings.sessionTimeout;
-        document.getElementById('passwordPolicy').value = settings.passwordPolicy;
-    },
-
-    // Initialize event listeners
-    initializeEventListeners() {
-        // Date range selector
-        const dateRange = document.getElementById('dateRange');
-        if (dateRange) {
-            dateRange.addEventListener('change', (e) => {
-                this.state.dateRange = e.target.value;
-                this.loadDashboardData();
-            });
-        }
-
-        // Add User button
-        const addUserBtn = document.getElementById('addUserBtn');
-        if (addUserBtn) {
-            addUserBtn.addEventListener('click', () => {
-                const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
-                modal.show();
-            });
-        }
-
-        // Save User button
-        const saveUserBtn = document.getElementById('saveUserBtn');
-        if (saveUserBtn) {
-            saveUserBtn.addEventListener('click', async () => {
-                const form = document.getElementById('addUserForm');
-                const formData = new FormData(form);
-                try {
-                    await window.api.admin.createUser(Object.fromEntries(formData));
-                    this.showSuccess('User created successfully');
-                    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
-                    form.reset();
-                } catch (error) {
-                    this.showError('Failed to create user');
+        async loadDashboardData() {
+            try {
+                console.log('Loading dashboard data...');
+                this.state.loading.dashboard = true;
+                
+                const data = await window.api.admin.getStats();
+                console.log('Dashboard stats:', data);
+                
+                if (data && data.stats) {
+                    this.state.data.dashboard = data.stats;
+                    this.updateDashboardStats();
+                } else {
+                    throw new Error('Invalid stats response format');
                 }
-            });
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                this.showError('Failed to load dashboard statistics');
+            } finally {
+                this.state.loading.dashboard = false;
+            }
         }
-    },
+        
+        updateDashboardStats() {
+            console.log('Updating dashboard stats...');
+            const stats = this.state.data.dashboard;
+            
+            const totalFoodsElement = document.getElementById('totalFoods');
+            const totalReviewsElement = document.getElementById('totalReviews');
+            
+            if (totalFoodsElement) {
+                totalFoodsElement.textContent = stats.totalFoods || '0';
+                console.log('Updated totalFoods:', stats.totalFoods);
+            } else {
+                console.warn('#totalFoods element not found');
+            }
+            
+            if (totalReviewsElement) {
+                totalReviewsElement.textContent = stats.totalReviews || '0';
+                console.log('Updated totalReviews:', stats.totalReviews);
+            } else {
+                console.warn('#totalReviews element not found');
+            }
+        }
+        
+        async loadFoods() {
+            try {
+                console.log('Starting to load foods...');
+                this.state.loading.foods = true;
+                this.renderFoods(); // Show loading state immediately
+                
+                console.log('Making API call to get foods...');
+                const foods = await window.api.admin.getFoods();
+                console.log('API Response:', foods);
+                
+                if (!Array.isArray(foods)) {
+                    console.error('Invalid response format:', foods);
+                    throw new Error('Invalid response format from server');
+                }
+                
+                console.log(`Received ${foods.length} foods`);
+                this.state.data.foods = foods;
+                
+                console.log('Rendering foods...');
+                this.renderFoods(); // Render actual data
+                
+                console.log('Initializing food filter...');
+                this.initializeFoodFilter();
+                
+            } catch (error) {
+                console.error('Error loading foods:', error);
+                this.showError('Failed to load foods: ' + error.message);
+                this.state.data.foods = [];
+                this.renderFoods(); // Render empty state
+            } finally {
+                this.state.loading.foods = false;
+                console.log('Food loading process completed');
+            }
+        }
+        
+        initializeFoodFilter() {
+            const searchInput = document.getElementById('foodSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredFoods = this.state.data.foods.filter(food => 
+                        food.name.toLowerCase().includes(searchTerm) ||
+                        food.cuisine.toLowerCase().includes(searchTerm) ||
+                        food.description.toLowerCase().includes(searchTerm)
+                    );
+                    this.renderFoods(filteredFoods);
+                });
+            }
+        }
+        
+        renderFoods(foods = null) {
+            const foodsToRender = foods || this.state.data.foods;
+            const tbody = document.getElementById('foodsTableBody');
+            if (!tbody) return;
 
-    // Show success message
-    showSuccess(message) {
-        // Implement toast or alert for success message
-        alert(message);
-    },
+            tbody.innerHTML = foodsToRender.length === 0 ? `
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-utensils fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No foods found</p>
+                    </td>
+                </tr>
+            ` : foodsToRender.map(food => `
+                <tr>
+                    <td>${food._id}</td>
+                    <td>${food.name}</td>
+                    <td>${food.cuisine}</td>
+                    <td>${food.rating || 'N/A'}</td>
+                    <td>${food.reviewCount || 0}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="window.Admin.handleEditFood('${food._id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="window.Admin.handleDeleteFood('${food._id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        showError(message) {
+            console.error('Error:', message);
+            const errorModal = document.getElementById('errorModal');
+            if (errorModal) {
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                    errorMessage.textContent = message;
+                }
+                const modal = new bootstrap.Modal(errorModal);
+                modal.show();
+            } else {
+                alert(message);
+            }
+        }
 
-    // Show error message
-    showError(message) {
-        // Implementation for showing error messages
-        console.error(message);
+        async handleAddFood() {
+            try {
+                // Get form values
+                const name = document.getElementById('foodName').value;
+                const region = document.getElementById('foodRegion').value;
+                const description = document.getElementById('foodDescription').value;
+                const image = document.getElementById('foodImage').value;
+
+                // Validate required fields
+                if (!name || !region || !description || !image) {
+                    this.showError('Please fill in all required fields');
+                    return;
+                }
+
+                console.log('Submitting new food:', { name, region, description, image });
+
+                // Make API call to create food
+                const response = await window.api.food.create({
+                    name,
+                    region,
+                    description,
+                    image,
+                    price: 0 // Default price
+                });
+
+                console.log('API Response:', response);
+
+                if (response && response.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addFoodModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Clear form
+                    document.getElementById('addFoodForm').reset();
+                    
+                    // Show success message
+                    this.showSuccess('Food added successfully');
+                    
+                    // Reload dashboard
+                    await this.loadDashboard();
+                    
+                    // Show dashboard section
+                    this.showSection('dashboard');
+                } else {
+                    throw new Error(response?.message || 'Failed to add food');
+                }
+            } catch (error) {
+                console.error('Failed to add food:', error);
+                this.showError(error.message || 'Failed to add food');
+            }
+        }
+
+        async handleEditFood(foodId) {
+            try {
+                const food = this.state.data.foods.find(f => f._id === foodId);
+                if (!food) {
+                    this.showError('Food not found');
+                    return;
+                }
+
+                // Show edit modal
+                const editModal = document.getElementById('editFoodModal');
+                if (editModal) {
+                    // Populate form fields
+                    document.getElementById('editFoodId').value = food._id;
+                    document.getElementById('editFoodName').value = food.name;
+                    document.getElementById('editFoodDescription').value = food.description;
+                    document.getElementById('editFoodPrice').value = food.price;
+                    document.getElementById('editFoodCuisine').value = food.cuisine;
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(editModal);
+                    modal.show();
+
+                    // Handle form submission
+                    const editFoodForm = document.getElementById('editFoodForm');
+                    if (editFoodForm) {
+                        // Remove any existing event listeners
+                        const newForm = editFoodForm.cloneNode(true);
+                        editFoodForm.parentNode.replaceChild(newForm, editFoodForm);
+
+                        // Add new event listener
+                        newForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            try {
+                                const formData = {
+                                    name: document.getElementById('editFoodName').value,
+                                    description: document.getElementById('editFoodDescription').value,
+                                    price: parseFloat(document.getElementById('editFoodPrice').value),
+                                    cuisine: document.getElementById('editFoodCuisine').value,
+                                    image: food.image // Preserve the existing image
+                                };
+
+                                console.log('Updating food with data:', formData);
+                                const response = await window.api.admin.updateFood(foodId, formData);
+                                console.log('Update response:', response);
+
+                                if (response && response.food) {
+                                    // Update food in state with the response data
+                                    this.state.data.foods = this.state.data.foods.map(f => 
+                                        f._id === foodId ? response.food : f
+                                    );
+                                    this.renderFoods();
+                                    modal.hide();
+                                    this.showSuccess('Food updated successfully');
+                                } else {
+                                    this.showError(response.message || 'Failed to update food');
+                                }
+                            } catch (error) {
+                                console.error('Error updating food:', error);
+                                this.showError('Failed to update food');
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error preparing edit form:', error);
+                this.showError('Failed to prepare edit form');
+            }
+        }
+
+        async handleDeleteFood(foodId) {
+            try {
+                if (!confirm('Are you sure you want to delete this food item?')) {
+                    return;
+                }
+
+                const response = await window.api.admin.deleteFood(foodId);
+                if (response.success) {
+                    // Remove food from state
+                    this.state.data.foods = this.state.data.foods.filter(f => f._id !== foodId);
+                    this.renderFoods();
+                    this.showSuccess('Food deleted successfully');
+                } else {
+                    this.showError(response.message || 'Failed to delete food');
+                }
+            } catch (error) {
+                console.error('Error deleting food:', error);
+                this.showError('Failed to delete food');
+            }
+        }
+
+        showSuccess(message) {
+            const toast = document.getElementById('successToast');
+            if (toast) {
+                const toastBody = toast.querySelector('.toast-body');
+                if (toastBody) {
+                    toastBody.textContent = message;
+                }
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            } else {
+                alert(message);
+            }
+        }
+
+        async loadDashboard() {
+            try {
+                console.log('Loading dashboard data...');
+                
+                // Get dashboard stats
+                const statsResponse = await window.api.admin.getStats();
+                console.log('Stats response:', statsResponse);
+                
+                if (statsResponse && statsResponse.stats) {
+                    document.getElementById('totalFoods').textContent = statsResponse.stats.totalFoods;
+                    document.getElementById('totalReviews').textContent = statsResponse.stats.totalReviews;
+                } else {
+                    throw new Error('Invalid stats response format');
+                }
+                
+                // Get foods data for the foods section
+                if (this.currentSection === 'foods') {
+                    const foodsResponse = await window.api.food.getAll();
+                    if (foodsResponse && foodsResponse.foods) {
+                        this.foods = foodsResponse.foods;
+                        this.renderFoods();
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                this.showError('Failed to load dashboard data');
+            }
+        }
     }
-};
 
-// Make admin object available globally
-window.admin = admin;
+    return new AdminClass();
+})();
 
-// Initialize admin if on admin page
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('admin.html')) {
-        admin.init();
-    }
-}); 
+// Make Admin available globally
+window.Admin = Admin;

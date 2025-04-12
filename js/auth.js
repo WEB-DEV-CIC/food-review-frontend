@@ -1,23 +1,49 @@
 // Authentication functionality
+const API_BASE_URL = 'http://localhost:5000/api/v1';
+
 const auth = {
     // Initialize auth functionality
-    init() {
-        // Check authentication status first
-        this.checkAuthStatus();
-        
-        // Redirect if on login/register page while logged in
-        this.checkPageRedirect();
-        
-        // Check if we're on the register page
-        const registerForm = document.getElementById('registerForm');
-        if (registerForm) {
-            registerForm.addEventListener('submit', this.handleRegister.bind(this));
-        }
+    async init() {
+        try {
+            console.log('Starting auth initialization...');
+            
+            // Check if user is already logged in
+            const user = this.getCurrentUser();
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            if (user) {
+                console.log('User already logged in:', user);
+                
+                // If on login/register page, redirect based on role
+                if (currentPage === 'login.html' || currentPage === 'register.html') {
+                    if (user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // If on admin page, verify admin role
+                if (currentPage === 'admin.html' && user.role !== 'admin') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } else {
+                console.log('No user logged in');
+                // If on protected pages, redirect to login
+                if (currentPage === 'admin.html' || currentPage === 'profile.html') {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            }
 
-        // Check if we're on the login page
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', this.handleLogin.bind(this));
+            // Initialize event listeners
+            this.initializeEventListeners();
+            console.log('Auth initialization complete');
+        } catch (error) {
+            console.error('Error initializing auth:', error);
+            this.showError('Failed to initialize authentication');
         }
     },
     
@@ -45,9 +71,14 @@ const auth = {
             return;
         }
         
-        // If user is not logged in and on profile/admin page, redirect to login
-        if (!user && (currentPage === 'profile.html' || currentPage === 'admin.html')) {
+        // If user is not logged in and on profile page, redirect to login
+        if (!user && currentPage === 'profile.html') {
             window.location.href = 'login.html';
+            return;
+        }
+
+        // For admin page, let the checkAdminAccess function handle it
+        if (currentPage === 'admin.html') {
             return;
         }
     },
@@ -60,19 +91,22 @@ const auth = {
         const userDropdown = document.getElementById('userDropdown');
         const userName = document.getElementById('userName');
 
-        if (!loginBtn || !registerBtn || !userDropdown || !userName) return;
-
-        if (user) {
-            // User is logged in
-            loginBtn.style.display = 'none';
-            registerBtn.style.display = 'none';
-            userDropdown.style.display = 'block';
-            userName.textContent = user.name;
-        } else {
-            // User is not logged in
-            loginBtn.style.display = 'block';
-            registerBtn.style.display = 'block';
-            userDropdown.style.display = 'none';
+        // Only update UI if we're on a page with auth elements
+        if (loginBtn || registerBtn || userDropdown || userName) {
+            if (user) {
+                // User is logged in
+                console.log('User is logged in, updating UI...');
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (registerBtn) registerBtn.style.display = 'none';
+                if (userDropdown) userDropdown.style.display = 'block';
+                if (userName) userName.textContent = user.name;
+            } else {
+                // User is not logged in
+                console.log('User is not logged in, updating UI...');
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (registerBtn) registerBtn.style.display = 'block';
+                if (userDropdown) userDropdown.style.display = 'none';
+            }
         }
     },
 
@@ -148,7 +182,7 @@ const auth = {
             }, 500);
             return;
         }
-        
+
         // Disable button and show loading state
         const button = document.getElementById('registerButton');
         button.disabled = true;
@@ -158,7 +192,7 @@ const auth = {
         const self = this;
         
         // Send registration request
-        fetch('http://localhost:5000/api/v1/auth/register', {
+        fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -198,7 +232,7 @@ const auth = {
     },
 
     // Handle login
-    handleLogin(event) {
+    async handleLogin(event) {
         event.preventDefault();
         
         // Reset error messages
@@ -238,57 +272,60 @@ const auth = {
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         
-        // Store reference to this
-        const self = this;
-        
-        // Send login request
-        fetch('http://localhost:5000/api/v1/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include', // Include cookies
-            body: JSON.stringify({
-                email,
-                password
-            })
-        })
-        .then(response => {
-            console.log('Login response status:', response.status);
+        try {
+            // Send login request
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+            
             if (!response.ok) {
-                return response.json().then(data => {
-                    console.error('Login error:', data);
-                    throw new Error(data.message || 'Login failed');
-                });
+                throw new Error(data.message || 'Login failed');
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Login successful:', data);
+
             // Store user data and token
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('token', data.token);
             
-            // Redirect to appropriate page
-            window.location.href = self.getRedirectUrl();
-        })
-        .catch(error => {
-            console.error('Login error:', error);
+            console.log('Login successful, user role:', data.user.role);
+            
+            // Get redirect URL from query parameter or default
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectTo = urlParams.get('redirect');
+            
+            // If there's a valid redirect parameter, use it
+            if (redirectTo && ['profile.html', 'food.html', 'admin.html', 'index.html'].includes(redirectTo)) {
+                window.location.href = redirectTo;
+                return;
+            }
+            
+            // Otherwise, redirect based on role
+            if (data.user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        } catch (error) {
             // Show error message
-            const errorMessage = error.message || 'Login failed. Please check your credentials.';
+            const errorMessage = error.message || 'Login failed. Please try again.';
             document.getElementById('loginEmailError').textContent = errorMessage;
             document.getElementById('loginEmail').classList.add('error');
             
             // Reset button
             button.disabled = false;
-            button.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-        });
+            button.innerHTML = 'Login';
+        }
     },
 
     // Handle logout
     logout() {
         // Send logout request to clear server-side cookie
-        fetch('http://localhost:5000/api/v1/auth/logout', {
+        fetch(`${API_BASE_URL}/auth/logout`, {
             method: 'POST',
             credentials: 'include'
         })
@@ -341,6 +378,90 @@ const auth = {
         }
         console.log('Redirecting to:', url);
         window.location.href = url;
+    },
+
+    // Check if user has admin access
+    async checkAdminAccess(event) {
+        if (event) {
+        event.preventDefault();
+        }
+        
+        const user = this.getCurrentUser();
+        console.log('Checking admin access for user:', user);
+        
+        if (!user) {
+            console.log('No user logged in, redirecting to login');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        if (user.role !== 'admin') {
+            console.log('User is not admin, redirecting to home');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        console.log('User is admin, redirecting to admin page');
+        window.location.href = 'admin.html';
+    },
+
+    // Initialize event listeners
+    initializeEventListeners() {
+        console.log('Initializing event listeners...');
+        
+        // Check if we're on the register page
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', this.handleRegister.bind(this));
+        }
+
+        // Check if we're on the login page
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', this.handleLogin.bind(this));
+        }
+
+        // Check if we're on the profile page
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', this.handleProfileUpdate.bind(this));
+        }
+
+        // Check if we're on the admin page
+        const adminLinks = document.querySelectorAll('[data-admin]');
+        if (adminLinks.length > 0) {
+            adminLinks.forEach(link => {
+                link.addEventListener('click', this.checkAdminAccess.bind(this));
+            });
+        }
+
+        // Update auth status immediately
+        this.checkAuthStatus();
+
+        // Update auth status when storage changes
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'user') {
+                this.checkAuthStatus();
+            }
+        });
+
+        console.log('Event listeners initialized');
+    },
+
+    // Show error message
+    showError(message) {
+        console.error('Error:', message);
+        const errorModal = document.getElementById('errorModal');
+        if (errorModal) {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+                errorMessage.textContent = message;
+            }
+            const modal = new bootstrap.Modal(errorModal);
+            modal.show();
+        } else {
+            alert(message);
+        }
     }
 };
 
