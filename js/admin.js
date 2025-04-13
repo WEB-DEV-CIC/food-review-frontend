@@ -153,12 +153,8 @@ const Admin = (function() {
                 const data = await window.api.admin.getStats();
                 console.log('Dashboard stats:', data);
                 
-                if (data && data.stats) {
-                    this.state.data.dashboard = data.stats;
-                    this.updateDashboardStats();
-                } else {
-                    throw new Error('Invalid stats response format');
-                }
+                this.state.data.dashboard = data.stats;
+                this.updateDashboardStats();
                 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -176,14 +172,14 @@ const Admin = (function() {
             const totalReviewsElement = document.getElementById('totalReviews');
             
             if (totalFoodsElement) {
-                totalFoodsElement.textContent = stats.totalFoods || '0';
+                totalFoodsElement.textContent = stats.totalFoods ?? '0';
                 console.log('Updated totalFoods:', stats.totalFoods);
             } else {
                 console.warn('#totalFoods element not found');
             }
             
             if (totalReviewsElement) {
-                totalReviewsElement.textContent = stats.totalReviews || '0';
+                totalReviewsElement.textContent = stats.totalReviews ?? '0';
                 console.log('Updated totalReviews:', stats.totalReviews);
             } else {
                 console.warn('#totalReviews element not found');
@@ -302,6 +298,12 @@ const Admin = (function() {
                     return;
                 }
 
+                // Validate image URL
+                if (!image.startsWith('http://') && !image.startsWith('https://')) {
+                    this.showError('Please enter a valid image URL');
+                    return;
+                }
+
                 console.log('Submitting new food:', { name, region, description, image });
 
                 // Make API call to create food
@@ -310,6 +312,7 @@ const Admin = (function() {
                     region,
                     description,
                     image,
+                    cuisine: region, // Using region as cuisine for now
                     price: 0 // Default price
                 });
 
@@ -443,35 +446,6 @@ const Admin = (function() {
                 bsToast.show();
             } else {
                 alert(message);
-            }
-        }
-
-        async loadDashboard() {
-            try {
-                console.log('Loading dashboard data...');
-                
-                // Get dashboard stats
-                const statsResponse = await window.api.admin.getStats();
-                console.log('Stats response:', statsResponse);
-                
-                if (statsResponse && statsResponse.stats) {
-                    document.getElementById('totalFoods').textContent = statsResponse.stats.totalFoods;
-                    document.getElementById('totalReviews').textContent = statsResponse.stats.totalReviews;
-                } else {
-                    throw new Error('Invalid stats response format');
-                }
-                
-                // Get foods data for the foods section
-                if (this.currentSection === 'foods') {
-                    const foodsResponse = await window.api.food.getAll();
-                    if (foodsResponse && foodsResponse.foods) {
-                        this.foods = foodsResponse.foods;
-                        this.renderFoods();
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard:', error);
-                this.showError('Failed to load dashboard data');
             }
         }
     }

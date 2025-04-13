@@ -3,11 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover and review amazing foods on FoodxBites - Your ultimate food review platform">
-    <title>FoodxBites - Discover Amazing Foods</title>
+    <meta name="description" content="Discover the best meals and restaurants with FoodxBites - Your ultimate food review platform">
+    <title>FoodxBites - Discover Amazing Food</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #8BC34A;
+            --light-green: #AED581;
+            --dark-green: #689F38;
+            --white: #FFFFFF;
+            --black: #212121;
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            animation: zoomInOut 20s infinite alternate;
+        }
+
+        @keyframes zoomInOut {
+            0% {
+                background-size: 100% auto;
+            }
+            100% {
+                background-size: 120% auto;
+            }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.4));
+            z-index: 1;
+            animation: fadeInOut 8s infinite alternate;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0.2;
+            }
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: var(--white);
+            padding: 2rem;
+            animation: fadeInUp 1s ease-out;
+            backdrop-filter: blur(2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.2;
+            animation: slideInLeft 1s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 1s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hero .btn {
+            background-color: var(--white);
+            color: var(--black);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeInUp 1s ease-out 0.5s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background-color: var(--white);
+            color: var(--black);
+        }
+
+        /* Floating Food Icons */
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .floating-icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 2rem;
+            animation: float 15s infinite linear;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg) scale(1.2);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg) scale(1);
+            }
+        }
+
+        .footer {
+            background-color: var(--black);
+            color: var(--white);
+            padding: 4rem 0 2rem;
+            margin-top: 0;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section {
+            padding: 0 1rem;
+        }
+
+        .footer-section h3 {
+            color: var(--white);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary-green);
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-green);
+            transform: translateX(5px);
+        }
+
+        .footer-links i {
+            font-size: 0.8rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: var(--white);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            padding: 0.8rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-green);
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-section h3::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .footer-links a {
+                justify-content: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -19,48 +317,19 @@
     <main>
         <!-- Hero Section -->
         <section class="hero">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Discover Culinary Delights</h1>
-                    <p class="lead">Explore authentic flavors, read honest reviews, and find your next favorite dish.</p>
-                    <div class="hero-buttons">
-                        <a class="btn btn-primary" href="food.html">
-                            <i class="fas fa-utensils"></i> Browse Foods
-                        </a>
-                        <a class="btn btn-outline-light" href="contact.html">
-                            <i class="fas fa-envelope"></i> Contact Us
-                        </a>
-                    </div>
-                </div>
+            <div class="floating-icons">
+                <i class="fas fa-utensils floating-icon" style="top: 10%; left: 10%;"></i>
+                <i class="fas fa-pizza-slice floating-icon" style="top: 20%; left: 80%;"></i>
+                <i class="fas fa-hamburger floating-icon" style="top: 40%; left: 30%;"></i>
+                <i class="fas fa-ice-cream floating-icon" style="top: 60%; left: 70%;"></i>
+                <i class="fas fa-coffee floating-icon" style="top: 80%; left: 20%;"></i>
             </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <i class="fas fa-star"></i>
-                            <h3>Honest Reviews</h3>
-                            <p>Read authentic reviews from real food enthusiasts.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <i class="fas fa-search"></i>
-                            <h3>Easy Discovery</h3>
-                            <p>Find your perfect meal with our advanced search.</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <i class="fas fa-users"></i>
-                            <h3>Community</h3>
-                            <p>Join a community of food lovers and share your experiences.</p>
-                        </div>
-                    </div>
-                </div>
+                <h1>Discover Culinary Excellence</h1>
+                <p>Explore a world of flavors with our curated collection of the finest restaurants and dishes. Your next unforgettable dining experience awaits.</p>
+                <a class="btn" id="digIn" onclick="digIn()" href="food.html">
+                    <i class="fas fa-utensils"></i> Explore Restaurants
+                </a>
             </div>
         </section>
     </main>
@@ -69,24 +338,25 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">
-                    <h3>FoodxBites</h3>
-                    <p>Your trusted food review platform</p>
+                <div class="footer-section">
+                    <h3>About FoodxBites</h3>
+                    <p>Discover the best culinary experiences with FoodxBites. We connect food enthusiasts with exceptional restaurants and dining experiences.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <a href="index.html">Home</a>
-                    <a href="food.html">Foods</a>
-                    <a href="contact.html">Contact</a>
-                    <a href="profile.html">Profile</a>
-                </div>
-                <div class="social-links">
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="mailto:info@foodxbites.com"><i class="fas fa-envelope"></i> info@foodxbites.com</a></li>
+                        <li><a href="tel:+358466863053"><i class="fas fa-phone"></i> +358 46 686 3053</a></li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 FoodxBites. All rights reserved.</p>
+                <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Privacy Policy</a> | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Terms of Service</a></p>
             </div>
         </div>
     </footer>
@@ -94,25 +364,50 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./js/api.js"></script>
+    <script src="./js/api-test.js"></script>
     <script src="./js/auth.js"></script>
     <script src="./js/main.js"></script>
+    <script src="./js/test.js"></script>
     <script>
         // Load navbar and initialize functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load navbar first
-            fetch('./components/navbar.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('navbar-container').innerHTML = data;
-                    // Initialize auth after navbar is loaded
-                    if (typeof auth !== 'undefined') {
-                        auth.init();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading navbar:', error);
-                });
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('Starting page initialization...');
+                
+                // Load navbar first
+                const navbarResponse = await fetch('./components/navbar.html');
+                if (!navbarResponse.ok) throw new Error('Failed to load navbar');
+                const navbarHtml = await navbarResponse.text();
+                document.getElementById('navbar-container').innerHTML = navbarHtml;
+                
+                // Initialize auth
+                if (typeof auth !== 'undefined') {
+                    console.log('Initializing auth...');
+                    await auth.init();
+                    console.log('Auth initialized');
+                } else {
+                    console.error('Auth module not loaded');
+                }
+                
+                // Initialize main functionality
+                if (typeof main !== 'undefined') {
+                    console.log('Initializing main...');
+                    await main.init();
+                    console.log('Main initialized');
+                } else {
+                    console.error('Main module not loaded');
+                }
+                
+                console.log('Page initialization complete');
+            } catch (error) {
+                console.error('Error during page initialization:', error);
+            }
         });
+
+        // Dig In function
+        function digIn() {
+            window.location.href = './food.html';
+        }
     </script>
 </body>
 </html>

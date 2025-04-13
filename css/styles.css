@@ -5,11 +5,10 @@
 }
 
 :root {
-    --primary-color: #ff6b6b;
-    --secondary-color: #4ecdc4;
-    --dark-color: #2d3436;
+    --primary-color: #06c299;
+    --secondary-color: #007bff;
+    --dark-color: #333;
     --light-color: #f8f9fa;
-    --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     --transition: all 0.3s ease;
 }
 
@@ -22,18 +21,23 @@ body {
 
 /* Navbar Styles */
 .navbar {
-    background: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--primary-color);
     padding: 1rem 0;
     position: sticky;
     top: 0;
     z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-brand {
+    color: var(--light-color) !important;
     font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
+    font-weight: 600;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
 }
 
 .navbar-brand i {
@@ -43,7 +47,7 @@ body {
 
 .navbar-toggler {
     border: none;
-    color: var(--dark-color);
+    color: var(--light-color);
     padding: 0.5rem;
 }
 
@@ -60,17 +64,20 @@ body {
 }
 
 .nav-link {
-    color: var(--dark-color);
-    font-weight: 500;
-    transition: color 0.3s ease;
+    color: var(--light-color) !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0.25rem 0;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
 }
 
 .nav-link.active {
-    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.2);
     font-weight: 600;
 }
 
@@ -86,20 +93,34 @@ body {
 }
 
 .navbar .btn-primary {
-    background-color: white;
+    background-color: var(--light-color);
+    border-color: var(--light-color);
     color: var(--primary-color);
-    border: none;
 }
 
 .navbar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
+    color: var(--light-color);
 }
 
-.navbar .btn-outline-light:hover {
-    background-color: white;
+.navbar .btn-outline-primary {
+    border-color: var(--light-color);
+    color: var(--light-color);
+}
+
+.navbar .btn-outline-primary:hover {
+    background-color: var(--light-color);
     color: var(--primary-color);
-    transform: translateY(-2px);
+}
+
+.navbar .btn-outline-danger {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.navbar .btn-outline-danger:hover {
+    background-color: var(--danger-color);
+    color: var(--light-color);
 }
 
 /* Media Queries */
@@ -123,9 +144,9 @@ body {
 
 /* Hero Section */
 .hero {
-    background: var(--gradient);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
-    padding: 6rem 0;
+    padding: 8rem 2rem;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -138,157 +159,130 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('../images/hero-bg.jpg') center/cover;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="rgba(255,255,255,0.1)" width="100" height="100"/></svg>');
     opacity: 0.1;
-    z-index: 0;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 800px;
-    margin: 0 auto;
 }
 
 .hero h1 {
     font-size: 3.5rem;
-    font-weight: 700;
     margin-bottom: 1.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    line-height: 1.2;
 }
 
-.hero .lead {
-    font-size: 1.25rem;
-    margin-bottom: 2rem;
+.hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
     opacity: 0.9;
 }
 
-.hero-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
-
-.hero-buttons .btn {
-    padding: 0.75rem 2rem;
+.hero .btn {
+    padding: 1rem 2.5rem;
+    background: white;
+    color: var(--primary-color);
+    font-size: 1.1rem;
     font-weight: 600;
-    border-radius: 50px;
-    transition: all 0.3s ease;
-}
-
-.hero-buttons .btn-primary {
-    background-color: white;
-    color: var(--primary-color);
     border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.hero-buttons .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.hero .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    background: var(--light-color);
 }
 
-.hero-buttons .btn-outline-light:hover {
-    background-color: white;
-    color: var(--primary-color);
-    transform: translateY(-2px);
-}
-
-/* Features Section */
-.features {
-    padding: 5rem 0;
-    background-color: white;
-}
-
-.feature-card {
-    text-align: center;
+/* Food Grid */
+.food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
     padding: 2rem;
-    border-radius: 10px;
-    transition: all 0.3s ease;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.food-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: var(--transition);
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.feature-card:hover {
+.food-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-.feature-card i {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
+.food-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: var(--transition);
 }
 
-.feature-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+.food-card:hover img {
+    transform: scale(1.05);
+}
+
+.food-info {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.food-info h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
     color: var(--dark-color);
 }
 
-.feature-card p {
-    color: #666;
-    font-size: 1.1rem;
+/* Search Bar */
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.search-container input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(6, 194, 153, 0.2);
 }
 
 /* Footer */
 .footer {
-    background-color: var(--dark-color);
+    background: var(--primary-color);
     color: white;
-    padding: 4rem 0 2rem;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.footer-logo h3 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: white;
-}
-
-.footer-logo p {
-    opacity: 0.8;
-}
-
-.footer-links {
-    display: flex;
-    gap: 2rem;
-}
-
-.footer-links a {
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-    color: var(--primary-color);
-}
-
-.social-links {
-    display: flex;
-    gap: 1rem;
-}
-
-.social-links a {
-    color: white;
-    font-size: 1.5rem;
-    transition: color 0.3s ease;
-}
-
-.social-links a:hover {
-    color: var(--primary-color);
-}
-
-.footer-bottom {
     text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    margin-top: auto;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.footer p {
+    margin: 0;
+    font-size: 0.9rem;
 }
 
 /* Responsive Design */
@@ -296,21 +290,16 @@ body {
     .hero h1 {
         font-size: 2.5rem;
     }
-
-    .hero-buttons {
-        flex-direction: column;
+    
+    .hero p {
+        font-size: 1rem;
     }
-
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
+    
+    .food-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        padding: 1rem;
     }
-
-    .footer-links {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
+    
     .navbar {
         padding: 0.8rem 1rem;
     }
