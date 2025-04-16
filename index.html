@@ -67,6 +67,7 @@
             color: var(--white);
             padding: 2rem;
             animation: fadeInUp 1s ease-out;
+            -webkit-backdrop-filter: blur(2px);
             backdrop-filter: blur(2px);
         }
 
@@ -318,11 +319,11 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="floating-icons">
-                <i class="fas fa-utensils floating-icon" style="top: 10%; left: 10%;"></i>
-                <i class="fas fa-pizza-slice floating-icon" style="top: 20%; left: 80%;"></i>
-                <i class="fas fa-hamburger floating-icon" style="top: 40%; left: 30%;"></i>
-                <i class="fas fa-ice-cream floating-icon" style="top: 60%; left: 70%;"></i>
-                <i class="fas fa-coffee floating-icon" style="top: 80%; left: 20%;"></i>
+                <i class="fas fa-utensils floating-icon floating-icon-utensils"></i>
+                <i class="fas fa-pizza-slice floating-icon floating-icon-pizza"></i>
+                <i class="fas fa-hamburger floating-icon floating-icon-hamburger"></i>
+                <i class="fas fa-ice-cream floating-icon floating-icon-ice-cream"></i>
+                <i class="fas fa-coffee floating-icon floating-icon-coffee"></i>
             </div>
             <div class="container">
                 <h1>Discover Culinary Excellence</h1>
@@ -356,7 +357,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Privacy Policy</a> | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Terms of Service</a></p>
+                <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" class="footer-link">Privacy Policy</a> | <a href="#" class="footer-link">Terms of Service</a></p>
             </div>
         </div>
     </footer>

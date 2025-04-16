@@ -445,3 +445,288 @@ body {
         gap: 0.5rem;
     }
 }
+    :root {
+      --primary-green: #8BC34A;
+      --light-green: #AED581;
+      --dark-green: #689F38;
+      --white: #FFFFFF;
+      --black: #212121;
+      --gray-100: #f8f9fa;
+      --gray-200: #e9ecef;
+      --gray-300: #dee2e6;
+      --gray-400: #ced4da;
+      --gray-500: #adb5bd;
+      --gray-600: #6c757d;
+      --gray-700: #495057;
+      --gray-800: #343a40;
+      --gray-900: #212529;
+    }
+
+    body {
+      background-color: var(--gray-100);
+    }
+
+    .hero-section {
+      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+      background-size: cover;
+      background-position: center;
+      padding: 4rem 0;
+      color: var(--white);
+      margin-bottom: 3rem;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .search-section {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: -3rem;
+      position: relative;
+      z-index: 1;
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-input {
+      border: none;
+      border-radius: 50px;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
+
+    .filter-container {
+      max-width: 250px;
+      margin: 1rem auto 0;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filter-select,
+    .sort-select {
+      border: none;
+      border-radius: 50px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: var(--gray-100);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 200px;
+    }
+
+    .filter-select:focus,
+    .sort-select:focus {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
+
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem 0;
+    }
+
+    .food-card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    .food-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .food-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .food-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .food-info {
+      padding: 1.5rem;
+    }
+
+    .food-info h3 {
+      margin-bottom: 0.5rem;
+      color: var(--gray-900);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .rating {
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .region {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .taste-profiles,
+    .dietary-restrictions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .taste-tag,
+    .diet-tag {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .taste-tag:hover,
+    .diet-tag:hover {
+      background: var(--primary-green);
+      color: var(--white);
+    }
+
+    .view-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-green);
+      color: var(--white);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .view-button:hover {
+      background: var(--dark-green);
+      transform: translateY(-2px);
+      color: var(--white);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--gray-600);
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: var(--gray-400);
+    }
+
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 3rem 0;
+      }
+
+      .search-section {
+        padding: 1.5rem;
+        margin-top: -2rem;
+      }
+
+      .food-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem 0;
+      }
+
+      .food-card img {
+        height: 180px;
+      }
+    }
+.search-container {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.filter-dropdown-inside {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 120px;
+}
+
+.filter-select-inside {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    background-color: var(--gray-200);
+    box-shadow: none;
+}
+
+.search-input.with-filter {
+    padding-left: 140px; /* Add space for the dropdown */
+}
