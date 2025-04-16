@@ -1,409 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse and discover amazing food reviews on FoodxBites - Your ultimate food review platform">
-    <title>FoodxBites - Food List</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="./css/styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        :root {
-            --primary-green: #8BC34A;
-            --light-green: #AED581;
-            --dark-green: #689F38;
-            --white: #FFFFFF;
-            --black: #212121;
-            --gray-100: #f8f9fa;
-            --gray-200: #e9ecef;
-            --gray-300: #dee2e6;
-            --gray-400: #ced4da;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-700: #495057;
-            --gray-800: #343a40;
-            --gray-900: #212529;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse and discover amazing food reviews on FoodxBites - Your ultimate food review platform">
+  <title>FoodxBites - Food List</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --primary-green: #8BC34A;
+      --light-green: #AED581;
+      --dark-green: #689F38;
+      --white: #FFFFFF;
+      --black: #212121;
+      --gray-100: #f8f9fa;
+      --gray-200: #e9ecef;
+      --gray-300: #dee2e6;
+      --gray-400: #ced4da;
+      --gray-500: #adb5bd;
+      --gray-600: #6c757d;
+      --gray-700: #495057;
+      --gray-800: #343a40;
+      --gray-900: #212529;
+    }
 
-        body {
-            background-color: var(--gray-100);
-        }
+    body {
+      background-color: var(--gray-100);
+    }
 
-        .hero-section {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-position: center;
-            padding: 4rem 0;
-            color: var(--white);
-            margin-bottom: 3rem;
-        }
+    .hero-section {
+      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+      background-size: cover;
+      background-position: center;
+      padding: 4rem 0;
+      color: var(--white);
+      margin-bottom: 3rem;
+    }
 
-        .hero-content {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-            animation: fadeInUp 1s ease-out;
-        }
+    .hero-content {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeInUp 1s ease-out;
+    }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-        .search-section {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: -3rem;
-            position: relative;
-            z-index: 1;
-            animation: slideInUp 0.8s ease-out;
-        }
+    .search-section {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: -3rem;
+      position: relative;
+      z-index: 1;
+      animation: slideInUp 0.8s ease-out;
+    }
 
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    .search-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-        .search-input {
-            border: none;
-            border-radius: 50px;
-            padding: 1rem 1.5rem;
-            font-size: 1.1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
+    .search-input {
+      border: none;
+      border-radius: 50px;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
 
-        .search-input:focus {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            outline: none;
-        }
+    .search-input:focus {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
 
-        .filter-container {
-            max-width: 300px;
-            margin: 1rem auto 0;
-        }
+    .filter-container {
+      max-width: 250px;
+      margin: 1rem auto 0;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-        .filter-select {
-            border: none;
-            border-radius: 50px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: var(--gray-100);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .filter-select,
+    .sort-select {
+      border: none;
+      border-radius: 50px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: var(--gray-100);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 200px;
+    }
 
-        .filter-select:focus {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            outline: none;
-        }
+    .filter-select:focus,
+    .sort-select:focus {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
 
-        .food-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 2rem 0;
-        }
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem 0;
+    }
 
-        .food-card {
-            background: var(--white);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
+    .food-card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
 
-        .food-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-        }
+    .food-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
 
-        .food-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
+    .food-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
 
-        .food-card:hover img {
-            transform: scale(1.05);
-        }
+    .food-card:hover img {
+      transform: scale(1.05);
+    }
 
-        .food-info {
-            padding: 1.5rem;
-        }
+    .food-info {
+      padding: 1.5rem;
+    }
 
-        .food-info h3 {
-            margin-bottom: 0.5rem;
-            color: var(--gray-900);
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+    .food-info h3 {
+      margin-bottom: 0.5rem;
+      color: var(--gray-900);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
 
-        .rating {
-            color: #fbbf24;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
+    .rating {
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
 
-        .region {
-            color: var(--gray-600);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    .region {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-        .taste-profiles,
-        .dietary-restrictions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+    .taste-profiles,
+    .dietary-restrictions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
 
-        .taste-tag,
-        .diet-tag {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
+    .taste-tag,
+    .diet-tag {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
 
-        .taste-tag:hover,
-        .diet-tag:hover {
-            background: var(--primary-green);
-            color: var(--white);
-        }
+    .taste-tag:hover,
+    .diet-tag:hover {
+      background: var(--primary-green);
+      color: var(--white);
+    }
 
-        .view-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--primary-green);
-            color: var(--white);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            justify-content: center;
-        }
+    .view-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-green);
+      color: var(--white);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+    }
 
-        .view-button:hover {
-            background: var(--dark-green);
-            transform: translateY(-2px);
-            color: var(--white);
-        }
+    .view-button:hover {
+      background: var(--dark-green);
+      transform: translateY(-2px);
+      color: var(--white);
+    }
 
-        .empty-state {
-            text-align: center;
-            padding: 4rem 0;
-            color: var(--gray-600);
-        }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--gray-600);
+    }
 
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: var(--gray-400);
-        }
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: var(--gray-400);
+    }
 
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 3rem 0;
-            }
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 3rem 0;
+      }
 
-            .search-section {
-                padding: 1.5rem;
-                margin-top: -2rem;
-            }
+      .search-section {
+        padding: 1.5rem;
+        margin-top: -2rem;
+      }
 
-            .food-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-                padding: 1.5rem 0;
-            }
+      .food-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem 0;
+      }
 
-            .food-card img {
-                height: 180px;
-            }
-        }
-    </style>
+      .food-card img {
+        height: 180px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <header>
-        <div id="navbar-container"></div>
-    </header>
+  <!-- Navigation Bar -->
+  <header>
+    <div id="navbar-container"></div>
+  </header>
 
-    <main id="mainContent">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="container">
-                <div class="hero-content">
-                    <h1 class="display-4 mb-3">Discover Amazing Food</h1>
-                    <p class="lead">Explore our curated collection of the finest restaurants and dishes</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Search and Filter Section -->
-        <section class="search-section">
-            <div class="container">
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="form-control search-input" placeholder="Search for restaurants or dishes...">
-                </div>
-                <div class="filter-container">
-                    <select id="filterDropdown" class="form-select filter-select" aria-label="Filter">
-                        <option selected value="">All Cuisines</option>
-                    <option value="italian">Italian</option>
-                    <option value="asian">Asian</option>
-                    <option value="chinese">Chinese</option>
-                </select>
-            </div>
+  <main id="mainContent">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="display-4 mb-3">Discover Amazing Food</h1>
+          <p class="lead">Explore our curated collection of the finest restaurants and dishes</p>
         </div>
-        </section>
+      </div>
+    </section>
 
-        <!-- Food Grid Section -->
-        <section class="container">
-            <div id="featuredFoods" class="food-grid">
-            <!-- Foods will be loaded here dynamically -->
+    <!-- Search and Filter Section -->
+    <section class="search-section">
+      <div class="container">
+        <div class="search-container">
+          <input type="text" id="searchInput" class="form-control search-input" placeholder="Search for restaurants or dishes...">
         </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>About FoodxBites</h3>
-                    <p>Discover the best culinary experiences with FoodxBites. We connect food enthusiasts with exceptional restaurants and dining experiences.</p>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact Us</h3>
-                    <ul class="footer-links">
-                        <li><a href="mailto:info@foodxbites.com"><i class="fas fa-envelope"></i> info@foodxbites.com</a></li>
-                        <li><a href="tel:+358466863053"><i class="fas fa-phone"></i> +358 46 686 3053</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Privacy Policy</a> | <a href="#" style="color: rgba(255, 255, 255, 0.7);">Terms of Service</a></p>
-            </div>
+        <div class="filter-container">
+          <select id="filterDropdown" class="form-select filter-select" aria-label="Filter">
+            <option selected value="">All Cuisines</option>
+            <option value="italian">Italian</option>
+            <option value="asian">Asian</option>
+            <option value="chinese">Chinese</option>
+          </select>
+          <select id="sortDropdown" class="form-select sort-select" aria-label="Sort Filter">
+            <option selected value="">Sort By</option>
+            <option value="alphabetic">Alphabetic</option>
+            <option value="latest">Latest</option>
+            <option value="reviews">Most Reviews</option>
+          </select>
         </div>
-    </footer>
+      </div>
+    </section>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./js/api.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/foods.js"></script>
-    <script>
-        // Load navbar and initialize functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load navbar first
-        fetch('./components/navbar.html')
-            .then(response => response.text())
-                .then(data => {
-                    document.getElementById('navbar-container').innerHTML = data;
-                    // Initialize auth after navbar is loaded
-                    if (typeof auth !== 'undefined') {
-                        auth.init();
-                    }
-            })
-                .catch(error => {
-                    console.error('Error loading navbar:', error);
-                });
-                
-            // Initialize foods functionality after DOM is fully loaded
-            if (typeof foods !== 'undefined') {
-                // Small delay to ensure DOM is fully rendered
-                setTimeout(() => {
-                    foods.init();
-                }, 100);
-            }
+    <!-- Food Grid Section -->
+    <section class="container">
+      <div id="featuredFoods" class="food-grid">
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About FoodxBites</h3>
+          <p>Discover the best culinary experiences with FoodxBites. We connect food enthusiasts with exceptional restaurants and dining experiences.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <ul class="footer-links">
+            <li><a href="mailto:info@foodxbites.com"><i class="fas fa-envelope"></i> info@foodxbites.com</a></li>
+            <li><a href="tel:+358466863053"><i class="fas fa-phone"></i> +358 46 686 3053</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" class="footer-link">Privacy Policy</a> | <a href="#" class="footer-link">Terms of Service</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/foods.js"></script>
+  <script>
+    // Load navbar and initialize functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load navbar first
+      fetch('./components/navbar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('navbar-container').innerHTML = data;
+          // Initialize auth after navbar is loaded
+          if (typeof auth !== 'undefined') {
+            auth.init();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading navbar:', error);
         });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const foodCards = document.querySelectorAll('.food-card');
-            
-            foodCards.forEach(card => {
-                const foodName = card.querySelector('h3').textContent.toLowerCase();
-                const foodRegion = card.querySelector('.region').textContent.toLowerCase();
-                
-                if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
-                    card.style.display = 'block';
-                    card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+      // Initialize foods functionality after DOM is fully loaded
+      if (typeof foods !== 'undefined') {
+        // Small delay to ensure DOM is fully rendered
+        setTimeout(() => {
+          foods.init();
+        }, 100);
+      }
+    });
 
-        // Filter functionality
-        document.getElementById('filterDropdown').addEventListener('change', function(e) {
-            const filterValue = e.target.value.toLowerCase();
-            const foodCards = document.querySelectorAll('.food-card');
-            
-            if (!filterValue) {
-                foodCards.forEach(card => {
-                    card.style.display = 'block';
-                    card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-                });
-                return;
-            }
-            
-            foodCards.forEach(card => {
-                const foodRegion = card.querySelector('.region').textContent.toLowerCase();
-                if (foodRegion.includes(filterValue)) {
-                    card.style.display = 'block';
-                    card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const foodCards = document.querySelectorAll('.food-card');
+
+      foodCards.forEach(card => {
+        const foodName = card.querySelector('h3').textContent.toLowerCase();
+        const foodRegion = card.querySelector('.region').textContent.toLowerCase();
+
+        if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
+          card.style.display = 'block';
+          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Filter functionality for cuisine
+    document.getElementById('filterDropdown').addEventListener('change', function(e) {
+      const filterValue = e.target.value.toLowerCase();
+      const foodCards = document.querySelectorAll('.food-card');
+
+      // Reset display for all cards if no filter is selected
+      if (!filterValue) {
+        foodCards.forEach(card => {
+          card.style.display = 'block';
+          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
         });
-    </script>
+        return;
+      }
+
+      foodCards.forEach(card => {
+        const foodRegion = card.querySelector('.region').textContent.toLowerCase();
+        if (foodRegion.includes(filterValue)) {
+          card.style.display = 'block';
+          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Sort functionality
+    document.getElementById('sortDropdown').addEventListener('change', function(e) {
+      const sortValue = e.target.value;
+      const container = document.getElementById('featuredFoods');
+      const foodCards = Array.from(container.querySelectorAll('.food-card'));
+
+      let sortedCards;
+
+      if(sortValue === 'alphabetic') {
+        // Sort alphabetically by food name (from <h3>)
+        sortedCards = foodCards.sort((a, b) => {
+          const nameA = a.querySelector('h3').textContent.toLowerCase();
+          const nameB = b.querySelector('h3').textContent.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+      } else if(sortValue === 'latest') {
+        // Sort by latest date (assuming data-date attribute exists)
+        sortedCards = foodCards.sort((a, b) => {
+          const dateA = new Date(a.getAttribute('data-date'));
+          const dateB = new Date(b.getAttribute('data-date'));
+          return dateB - dateA;
+        });
+      } else if(sortValue === 'reviews') {
+        // Sort by most reviews (assuming data-reviews attribute exists)
+        sortedCards = foodCards.sort((a, b) => {
+          const reviewsA = parseInt(a.getAttribute('data-reviews') || '0', 10);
+          const reviewsB = parseInt(b.getAttribute('data-reviews') || '0', 10);
+          return reviewsB - reviewsA;
+        });
+      } else {
+        // If no valid sort value is selected, do nothing
+        return;
+      }
+
+      // Clear container and re-append sorted cards
+      container.innerHTML = '';
+      sortedCards.forEach(card => container.appendChild(card));
+    });
+  </script>
 </body>
 </html>
