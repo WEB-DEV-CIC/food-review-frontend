@@ -1,7 +1,7 @@
 const food = [];
 const foodGrid = document.getElementById('foodGrid');
 const searchInput = document.getElementById('searchInput');
-const API_BASE_URL='http://localhost:5000/api/v1'
+const API_BASE_URL = 'http://localhost:3002/api';
 
 document.body.style.backgroundColor = '#f5f5f5'; // Light gray for the body background
 
@@ -44,7 +44,7 @@ let allFoods = []; // Store all food data for filtering
 
 const renderFoods = async () => {
     try {
-        const response = await fetch('http://localhost:5000/api/v1/foods');
+        const response = await fetch('http://localhost:3002/api/foods');
         const foodData = await response.json();
         allFoods = foodData.foods; // Save all food data
         console.log(foodData.foods);
@@ -160,7 +160,7 @@ const handleResponse= async()=>{
 //     console.log(response)
 // }
 
-// const API_BASE_URL = 'http://localhost:5000/api/v1';
+// const API_BASE_URL = 'http://localhost:3002/api';
 
 // const handleResponse = async (response) => {
 // if (!response.ok) {

@@ -1,5 +1,5 @@
 // Authentication functionality
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = 'http://localhost:3002/api';
 
 const auth = {
     // Initialize auth functionality
@@ -13,6 +13,13 @@ const auth = {
             
             if (user) {
                 console.log('User already logged in:', user);
+                
+                // Validate user data
+                if (!user.role) {
+                    console.warn('User object missing role, setting default role');
+                    user.role = 'user';
+                    localStorage.setItem('user', JSON.stringify(user));
+                }
                 
                 // If on login/register page, redirect based on role
                 if (currentPage === 'login.html' || currentPage === 'register.html') {
@@ -47,15 +54,39 @@ const auth = {
         }
     },
     
+    // Validate user data
+    validateUserData(userData) {
+        if (!userData || typeof userData !== 'object') {
+            return null;
+        }
+        
+        // Check for required fields and set defaults
+        const validatedUser = {
+            ...userData,
+            name: userData.name || 'User',
+            role: userData.role || 'user',
+            email: userData.email || ''
+        };
+        
+        return validatedUser;
+    },
+
     // Get current user from localStorage
     getCurrentUser() {
         const userStr = localStorage.getItem('user');
-        if (!userStr) return null;
+        
+        // Check if userStr is null or 'undefined'
+        if (!userStr || userStr === 'undefined') {
+            return null;
+        }
         
         try {
-            return JSON.parse(userStr);
+            const userData = JSON.parse(userStr);
+            return this.validateUserData(userData);
         } catch (error) {
+            // Handle JSON parsing error
             console.error('Error parsing user data:', error);
+            localStorage.removeItem('user');
             return null;
         }
     },
@@ -199,7 +230,8 @@ const auth = {
             },
             credentials: 'include', // Include cookies
             body: JSON.stringify({
-                name,
+                username: name,  
+                fullname: name, 
                 email,
                 password
             })
@@ -281,31 +313,35 @@ const auth = {
                 },
                 body: JSON.stringify({ email, password })
             });
-
+            
+            console.log('Login response status:', response.status);
             const data = await response.json();
+            console.log('Login response data:', data);
             
             if (!response.ok) {
                 throw new Error(data.message || 'Login failed');
             }
-
-            // Store user data and token
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('token', data.token);
             
-            console.log('Login successful, user role:', data.user.role);
-            
-            // Get redirect URL from query parameter or default
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectTo = urlParams.get('redirect');
-            
-            // If there's a valid redirect parameter, use it
-            if (redirectTo && ['profile.html', 'food.html', 'admin.html', 'index.html'].includes(redirectTo)) {
-                window.location.href = redirectTo;
-                return;
+            // Handle possible different response formats
+            let userData;
+            if (data.user) {
+                userData = data.user;
+            } else {
+                // If backend directly returns user data instead of wrapping in user field
+                userData = {
+                    id: data.id,
+                    name: data.username || data.fullname || 'User',
+                    email: data.email || email, // Use email from login form as fallback
+                    role: data.role || 'user'
+                };
             }
             
-            // Otherwise, redirect based on role
-            if (data.user.role === 'admin') {
+            // Store user data
+            localStorage.setItem('user', JSON.stringify(userData));
+            localStorage.setItem('token', data.token || '');
+            
+            // Redirect based on role
+            if (userData.role === 'admin') {
                 window.location.href = 'admin.html';
             } else {
                 window.location.href = 'index.html';

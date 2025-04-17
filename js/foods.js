@@ -1,6 +1,6 @@
-        // Food list page functionality
+// Food list page functionality
         const foods = {
-            foodGrid: null,
+            foodGrid: document.getElementById('foodsList'),
 
             async init() {
                 console.log('Initializing foods list functionality');
@@ -45,7 +45,12 @@
                     const response = await window.api.food.getAll();
                     console.log('API response:', response);
                     
-                    if (response && response.foods) {
+                    // Check if response is an array or an object with foods property
+                    if (Array.isArray(response)) {
+                        console.log(`Rendering ${response.length} food items`);
+                        this.renderFoods(response);
+                    } else if (response && response.foods) {
+                        // keep the existing structure for backward compatibility
                         console.log(`Rendering ${response.foods.length} food items`);
                         this.renderFoods(response.foods);
                     } else {
@@ -70,16 +75,17 @@
 
                 this.foodGrid.innerHTML = foods.map(food => {
                     // Ensure food object exists and has required properties
-                    if (!food || !food._id) {
+                    if (!food || (!food.id && !food._id)) {
                         console.warn('Invalid food item:', food);
                         return '';
                     }
                     
                     // Safely access properties with defaults
+                    const foodId = food._id || food.id;
                     const name = food.name || 'Unnamed Food';
-                    const imageUrl = food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+                    const imageUrl = food.image_url || food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
                     const rating = typeof food.rating === 'number' ? food.rating : 0;
-                    const region = food.region || 'Region not specified';
+                    const region = food.region || food.region_name || 'Region not specified';
                     const tasteProfile = Array.isArray(food.tasteProfile) ? food.tasteProfile : [];
                     const dietaryRestrictions = Array.isArray(food.dietaryRestrictions) ? food.dietaryRestrictions : [];
 
@@ -100,7 +106,7 @@
                                         ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
                                     </div>
                                 ` : ''}
-                                <a href="food-details.html?id=${food._id}" class="button">View Details</a>
+                                <a href="food-details.html?id=${foodId}" class="button">View Details</a>
                             </div>
                         </div>
                     `;
@@ -131,16 +137,3 @@
                 `;
             }
         };
-
-        // Initialize the foods page
-        document.addEventListener('DOMContentLoaded', () => {
-            // Try to find the food grid element
-            foods.foodGrid = document.getElementById('featuredFoods');
-            
-            // Initialize foods functionality
-            if (foods.foodGrid) {
-                foods.init();
-            } else {
-                console.error('Food grid container not found');
-            }
-        }); 

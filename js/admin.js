@@ -24,7 +24,7 @@ const Admin = (function() {
             this.init = this.init.bind(this);
             this.initializeEventListeners = this.initializeEventListeners.bind(this);
             this.switchSection = this.switchSection.bind(this);
-            this.loadDashboardData = this.loadDashboardData.bind(this);
+            this. EngineersloadDashboardData = this.loadDashboardData.bind(this);
             this.updateDashboardStats = this.updateDashboardStats.bind(this);
             this.loadFoods = this.loadFoods.bind(this);
             this.renderFoods = this.renderFoods.bind(this);
@@ -250,9 +250,8 @@ const Admin = (function() {
                 </tr>
             ` : foodsToRender.map(food => `
                 <tr>
-                    <td>${food._id}</td>
+                    <td>${food.id}</td>
                     <td>${food.name}</td>
-                    <td>${food.cuisine}</td>
                     <td>${food.rating || 'N/A'}</td>
                     <td>${food.reviewCount || 0}</td>
                     <td>

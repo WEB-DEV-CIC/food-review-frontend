@@ -5,15 +5,6 @@ const main = {
     async init() {
         console.log('Initializing main functionality');
         try {
-            // Check if featuredFoods element exists
-            if (!this.featuredFoods) {
-                console.log('Featured foods container not found, retrying...');
-                this.featuredFoods = document.getElementById('featuredFoods');
-                if (!this.featuredFoods) {
-                    console.error('Featured foods container still not found after retry');
-                    return;
-                }
-            }
             
             // Check if API is available
             if (!window.api || !window.api.food) {
@@ -133,51 +124,4 @@ const main = {
         `;
     },
 
-    // Fallback food data in case API is not available
-    getFallbackFoods() {
-        return [
-            {
-                _id: 'fallback1',
-                name: 'Delicious Pizza',
-                image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                rating: 4.5,
-                region: 'Italian',
-                tasteProfile: ['Savory', 'Cheesy'],
-                dietaryRestrictions: ['Vegetarian']
-            },
-            {
-                _id: 'fallback2',
-                name: 'Fresh Sushi',
-                image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                rating: 4.8,
-                region: 'Japanese',
-                tasteProfile: ['Fresh', 'Umami'],
-                dietaryRestrictions: ['Gluten-Free']
-            },
-            {
-                _id: 'fallback3',
-                name: 'Spicy Tacos',
-                image: 'https://images.unsplash.com/photo-1564053489984-317bbd824340?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                rating: 4.2,
-                region: 'Mexican',
-                tasteProfile: ['Spicy', 'Savory'],
-                dietaryRestrictions: ['Gluten-Free']
-            }
-        ];
-    }
 };
-
-// Initialize the main page
-document.addEventListener('DOMContentLoaded', () => {
-    // Try to find the featuredFoods element
-    main.featuredFoods = document.getElementById('featuredFoods');
-    
-    // If we're on the index page, initialize main functionality
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
-        if (main.featuredFoods) {
-            main.init();
-        } else {
-            console.error('Featured foods container not found');
-        }
-    }
-});
