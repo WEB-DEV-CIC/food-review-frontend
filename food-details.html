@@ -140,14 +140,17 @@
                 
                 if (food) {
                     // Create image URL with fallback
-                    const imageUrl = food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+                    const imageUrl = food.image || 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';
                     
                     document.getElementById('foodDetails').innerHTML = `
                         <div class="food-detail-card">
-                            <img src="${imageUrl}" 
-                                alt="${food.name}" 
-                                class="food-detail-image"
-                                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';">
+                            <div class="food-image">
+                                <img src="${imageUrl}" 
+                                    alt="${food.name}" 
+                                    class="food-detail-image"
+                                    style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;"
+                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';">
+                            </div>
                             <div class="food-detail-info">
                                 <h1>${food.name}</h1>
                                 <div class="rating">${generateStarRating(food.rating)}</div>
@@ -180,7 +183,7 @@
         function showFallbackUI() {
             document.getElementById('foodDetails').innerHTML = `
                 <div class="food-detail-card">
-                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                    <img src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0" 
                         alt="Food Image" 
                         class="food-detail-image">
                     <div class="food-detail-info">

@@ -722,43 +722,33 @@
 
             <!-- Foods Section -->
             <div id="foods" class="admin-section" style="display: none;">
-                <div class="foods-header">
-                    <div class="search-container">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="foodSearch" class="form-control" placeholder="Search foods...">
-                    </div>
-                    <button class="add-food-btn" data-bs-toggle="modal" data-bs-target="#addFoodModal">
-                        <i class="fas fa-plus"></i> Add Food
-                    </button>
-                </div>
-
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Cuisine</th>
-                                    <th>Rating</th>
-                                    <th>Reviews</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="foodsTableBody">
-                                <!-- Foods will be loaded here -->
-                            </tbody>
-                        </table>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Foods</h2>
+                    <div>
+                        <button id="deleteSelectedBtn" class="btn btn-danger me-2" style="display: none;">
+                            <i class="fas fa-trash"></i> Delete Selected
+                        </button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFoodModal">
+                            <i class="fas fa-plus"></i> Add Food
+                        </button>
                     </div>
                 </div>
-
-                <div class="empty-state" style="display: none;">
-                    <i class="fas fa-utensils"></i>
-                    <h3>No Foods Found</h3>
-                    <p>Add your first food item to get started</p>
-                    <button class="add-food-btn" data-bs-toggle="modal" data-bs-target="#addFoodModal">
-                        <i class="fas fa-plus"></i> Add Food
-                    </button>
+                <input type="text" id="foodSearch" class="search-input" placeholder="Search foods...">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Cuisine</th>
+                                <th>Price</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="foodsTableBody">
+                            <!-- Foods will be rendered here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -828,31 +818,33 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Food</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editFoodForm">
-                        <input type="hidden" id="editFoodId">
+                        <input type="hidden" id="editFoodId" name="id">
                         <div class="mb-3">
-                            <label for="editFoodName" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="editFoodName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editFoodDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editFoodDescription" rows="3" required></textarea>
+                            <label for="editName" class="form-label">Food Name</label>
+                            <input type="text" class="form-control" id="editName" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editFoodPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="editFoodPrice" step="0.01" required>
+                            <label for="editCuisine" class="form-label">Cuisine</label>
+                            <input type="text" class="form-control" id="editCuisine" name="cuisine" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editFoodCuisine" class="form-label">Cuisine</label>
-                            <input type="text" class="form-control" id="editFoodCuisine" required>
+                            <label for="editDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editDescription" name="description" required></textarea>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <div class="mb-3">
+                            <label for="editPrice" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="editPrice" name="price" step="0.01" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="editImage" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="editImage" name="image" required>
+                            <div class="form-text">Enter a valid image URL (must start with http:// or https://)</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
                 </div>
             </div>
@@ -889,47 +881,28 @@
     
     <!-- Initialize admin page -->
     <script>
-         const foodName = document.querySelector('#foodName');
-                const foodCuisine = document.querySelector('#foodCuisine');
-                const foodDescription = document.querySelector('#foodDescription');
-                const foodPrice = document.querySelector('#foodPrice');
-                const foodImage = document.querySelector('#foodImage');
-
-                console.log('foodName:', foodName);
-                console.log('foodCuisine:', foodCuisine);
-                console.log('foodDescription:', foodDescription);
-                console.log('foodPrice:', foodPrice);
-                console.log('foodImage:', foodImage);
-
-                
-        async function initializeAdminPage() {
-            console.log('Initializing admin page...');
-
-            // Wait for full DOM
-            if (document.readyState !== 'complete') {
-                await new Promise(res => window.addEventListener('load', res));
-            }
-
+        document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || user.role !== 'admin') {
-                    console.warn('Redirecting: user not admin');
-                    window.location.href = 'login.html?redirect=admin.html';
+                // Check admin access and token
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+                
+                if (user.role !== 'admin' || !token) {
+                    window.location.href = '/login.html';
                     return;
                 }
 
-                if (window.Admin) {
-                    await window.Admin.init();
-                } else {
-                    console.error('Admin module not found');
-                }
-            } catch (err) {
-                console.error('Failed to init admin page:', err);
-                window.location.href = 'login.html';
-            }
-        }
+                // Initialize Admin
+                const admin = Admin.getInstance();
+                await admin.init();
 
-        document.addEventListener('DOMContentLoaded', initializeAdminPage);
+                // Expose Admin instance to window
+                window.Admin = admin;
+            } catch (error) {
+                console.error('Error initializing admin panel:', error);
+                window.location.href = '/login.html';
+            }
+        });
     </script>
 </body>
 </html>

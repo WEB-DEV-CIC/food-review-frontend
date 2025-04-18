@@ -195,6 +195,50 @@ const food = {
         errorDiv.innerHTML = message;
         this.foodDetail.innerHTML = '';
         this.foodDetail.appendChild(errorDiv);
+    },
+
+    async loadFoods() {
+        try {
+            const searchQuery = document.getElementById('searchInput').value;
+            const cuisine = document.getElementById('cuisineFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            let url = '/api/v1/foods?';
+            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+            if (cuisine) url += `&cuisine=${encodeURIComponent(cuisine)}`;
+            if (sortBy) url += `&sort=${encodeURIComponent(sortBy)}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.foods) {
+                let sortedFoods = [...data.foods];
+                
+                // Apply sorting based on the selected option
+                switch(sortBy) {
+                    case 'rating':
+                        sortedFoods.sort((a, b) => b.rating - a.rating);
+                        break;
+                    case 'price':
+                        sortedFoods.sort((a, b) => a.price - b.price);
+                        break;
+                    case 'alphabetic':
+                        sortedFoods.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'latest':
+                        sortedFoods.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        break;
+                    case 'reviews':
+                        sortedFoods.sort((a, b) => b.reviewCount - a.reviewCount);
+                        break;
+                }
+                
+                renderFoods(sortedFoods);
+            }
+        } catch (error) {
+            console.error('Error loading foods:', error);
+            showError('Failed to load foods');
+        }
     }
 };
 

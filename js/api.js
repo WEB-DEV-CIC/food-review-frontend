@@ -78,12 +78,32 @@ const api = {
         },
 
         async deleteFood(id) {
-            const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
-                method: 'DELETE',
-                headers: api.getHeaders()
-            });
-            if (!response.ok) throw new Error('Failed to delete food');
-            return response.json();
+            try {
+                console.log('Deleting food with ID:', id);
+                const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
+                    method: 'DELETE',
+                    headers: api.getHeaders()
+                });
+                
+                console.log('Delete response status:', response.status);
+                const data = await response.json();
+                console.log('Delete response data:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to delete food');
+                }
+                
+                return {
+                    success: true,
+                    message: data.message
+                };
+            } catch (error) {
+                console.error('Error deleting food:', error);
+                return {
+                    success: false,
+                    message: error.message
+                };
+            }
         },
 
         async getReviews() {
@@ -106,22 +126,27 @@ const api = {
 
     // Food endpoints
     food: {
-        async getAll() {
+        async getAll(params = {}) {
             try {
-                console.log('Fetching all foods...');
-                const response = await fetch(`${api.baseUrl}/foods`, {
+                const queryString = new URLSearchParams(params).toString();
+                const url = `${api.baseUrl}/foods${queryString ? `?${queryString}` : ''}`;
+                console.log('Making request to:', url);
+                const response = await fetch(url, {
                     headers: api.getHeaders()
                 });
                 
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`Failed to fetch foods: ${response.status} ${errorText}`);
                 }
                 
                 const data = await response.json();
-                console.log('Foods data:', data);
+                console.log('Parsed response data:', data);
                 return data;
             } catch (error) {
-                console.error('Error fetching foods:', error);
+                console.error('Error in getAll:', error);
                 throw error;
             }
         },
@@ -288,7 +313,7 @@ const api = {
     }
 };
 
-// Make api object globally available
+// Expose API module to window object
 window.api = api;
 
 console.log('API module loaded and exposed to window.api');

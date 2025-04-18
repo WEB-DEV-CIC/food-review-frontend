@@ -17,7 +17,8 @@ const Admin = (function() {
                     dashboard: false,
                     foods: false,
                     reviews: false
-                }
+                },
+                selectedFoods: new Set() // Track selected food IDs
             };
 
             // Bind methods to instance
@@ -32,16 +33,28 @@ const Admin = (function() {
             this.handleAddFood = this.handleAddFood.bind(this);
             this.handleEditFood = this.handleEditFood.bind(this);
             this.handleDeleteFood = this.handleDeleteFood.bind(this);
+            this.handleSelectAll = this.handleSelectAll.bind(this);
+            this.handleSelectFood = this.handleSelectFood.bind(this);
+            this.handleDeleteSelected = this.handleDeleteSelected.bind(this);
+        }
+
+        static getInstance() {
+            if (!instance) {
+                instance = new AdminClass();
+            }
+            return instance;
         }
 
         async init() {
             try {
                 console.log('Initializing admin panel...');
                 
-                // Check admin access
+                // Check admin access and token
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
-                if (user.role !== 'admin') {
-                    window.location.href = '/index.html';
+                const token = localStorage.getItem('token');
+                
+                if (user.role !== 'admin' || !token) {
+                    window.location.href = '/login.html';
                     return;
                 }
                 
@@ -63,8 +76,6 @@ const Admin = (function() {
             }
         }
 
- 
-        
         initializeEventListeners() {
             console.log('Initializing admin event listeners...');
             
@@ -83,16 +94,71 @@ const Admin = (function() {
                 });
             }
 
+            // Edit food form
+            const editFoodForm = document.getElementById('editFoodForm');
+            if (editFoodForm) {
+                editFoodForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    try {
+                        const foodId = document.getElementById('editFoodId').value;
+                        const formData = {
+                            name: document.getElementById('editName').value,
+                            cuisine: document.getElementById('editCuisine').value,
+                            description: document.getElementById('editDescription').value,
+                            price: parseFloat(document.getElementById('editPrice').value),
+                            image: document.getElementById('editImage').value
+                        };
+
+                        const result = await window.api.admin.updateFood(foodId, formData);
+                        if (result.success) {
+                            // Update the food in the state
+                            this.state.data.foods = this.state.data.foods.map(f => 
+                                f._id === foodId ? { ...f, ...formData } : f
+                            );
+                            
+                            // Update the UI
+                            this.renderFoods();
+                            
+                            // Hide the modal
+                            const editModal = bootstrap.Modal.getInstance(document.getElementById('editFoodModal'));
+                            editModal.hide();
+                            
+                            // Show success message
+                            this.showSuccess('Food updated successfully');
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } catch (error) {
+                        console.error('Error updating food:', error);
+                        this.showError('Failed to update food');
+                    }
+                });
+            }
+
             // Save food button
             const saveFoodBtn = document.getElementById('saveFoodBtn');
             if (saveFoodBtn) {
                 saveFoodBtn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent default behavior
+                    e.preventDefault();
                     console.log('Save Food button clicked');
-                    this.handleAddFood(); // Call the handleAddFood function
+                    this.handleAddFood();
                 });
-            } else {
-                console.warn('Save Food button not found in the DOM');
+            }
+
+            // Select all checkbox
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', (e) => {
+                    this.handleSelectAll(e.target.checked);
+                });
+            }
+
+            // Delete selected button
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.addEventListener('click', () => {
+                    this.handleDeleteSelected();
+                });
             }
             
             // Search input
@@ -111,6 +177,22 @@ const Admin = (function() {
                     window.location.href = 'login.html';
                 });
             }
+
+            // Edit and Delete buttons (using event delegation)
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('edit-food-btn')) {
+                    const foodId = target.dataset.foodId;
+                    if (foodId) {
+                        this.handleEditFood(foodId);
+                    }
+                } else if (target.classList.contains('delete-food-btn')) {
+                    const foodId = target.dataset.foodId;
+                    if (foodId) {
+                        this.handleDeleteFood(foodId);
+                    }
+                }
+            });
             
             console.log('Admin event listeners initialized');
         }
@@ -249,30 +331,28 @@ const Admin = (function() {
 
             tbody.innerHTML = foodsToRender.length === 0 ? `
                 <tr>
-                    <td colspan="6" class="text-center py-4">
-                        <i class="fas fa-utensils fa-2x text-muted mb-3"></i>
-                        <p class="text-muted">No foods found</p>
-                    </td>
+                    <td colspan="5" class="text-center">No foods found</td>
                 </tr>
             ` : foodsToRender.map(food => `
                 <tr>
-                    <td>${food._id}</td>
                     <td>${food.name}</td>
                     <td>${food.cuisine}</td>
-                    <td>${food.rating || 'N/A'}</td>
-                    <td>${food.reviewCount || 0}</td>
+                    <td>$${food.price.toFixed(2)}</td>
+                    <td>${food.rating ? food.rating.toFixed(1) : 'N/A'}</td>
                     <td>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-primary" onclick="window.Admin.handleEditFood('${food._id}')" title="Edit">
-                                <i class="fas fa-edit"></i>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-primary edit-food-btn" data-food-id="${food._id}">
+                                <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="window.Admin.handleDeleteFood('${food._id}')" title="Delete">
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-sm btn-danger delete-food-btn" data-food-id="${food._id}">
+                                <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     </td>
                 </tr>
             `).join('');
+
+            this.updateDeleteSelectedButton();
         }
         
         showError(message) {
@@ -370,6 +450,23 @@ const Admin = (function() {
                     // Clear form
                     document.getElementById('addFoodForm').reset();
 
+                    // Hide the modal using Bootstrap's modal method
+                    const modalElement = document.getElementById('addFoodModal');
+                    if (modalElement) {
+                        // Remove the 'show' class and set display to none
+                        modalElement.classList.remove('show');
+                        modalElement.style.display = 'none';
+                        // Remove the modal backdrop
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                        // Remove the modal-open class from body
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+
                     // Show success message
                     this.showSuccess('Food added successfully');
 
@@ -390,87 +487,78 @@ const Admin = (function() {
 
         async handleEditFood(foodId) {
             try {
+                console.log('Editing food with ID:', foodId);
+                console.log('Current foods:', this.state.data.foods);
+                
+                // Find the food item
                 const food = this.state.data.foods.find(f => f._id === foodId);
                 if (!food) {
                     this.showError('Food not found');
                     return;
                 }
 
-                // Show edit modal
-                const editModal = document.getElementById('editFoodModal');
-                if (editModal) {
-                    // Populate form fields
-                    document.getElementById('editFoodId').value = food._id;
-                    document.getElementById('editFoodName').value = food.name;
-                    document.getElementById('editFoodDescription').value = food.description;
-                    document.getElementById('editFoodPrice').value = food.price;
-                    document.getElementById('editFoodCuisine').value = food.cuisine;
+                // Get form elements
+                const editFoodId = document.getElementById('editFoodId');
+                const editName = document.getElementById('editName');
+                const editCuisine = document.getElementById('editCuisine');
+                const editDescription = document.getElementById('editDescription');
+                const editPrice = document.getElementById('editPrice');
+                const editImage = document.getElementById('editImage');
 
-                    // Show modal
-                    const modal = new bootstrap.Modal(editModal);
-                    modal.show();
-
-                    // Handle form submission
-                    const editFoodForm = document.getElementById('editFoodForm');
-                    if (editFoodForm) {
-                        // Remove any existing event listeners
-                        const newForm = editFoodForm.cloneNode(true);
-                        editFoodForm.parentNode.replaceChild(newForm, editFoodForm);
-
-                        // Add new event listener
-                        newForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            try {
-                                const formData = {
-                                    name: document.getElementById('editFoodName').value,
-                                    description: document.getElementById('editFoodDescription').value,
-                                    price: parseFloat(document.getElementById('editFoodPrice').value),
-                                    cuisine: document.getElementById('editFoodCuisine').value,
-                                    image: food.image // Preserve the existing image
-                                };
-
-                                console.log('Updating food with data:', formData);
-                                const response = await window.api.admin.updateFood(foodId, formData);
-                                console.log('Update response:', response);
-
-                                if (response && response.food) {
-                                    // Update food in state with the response data
-                                    this.state.data.foods = this.state.data.foods.map(f => 
-                                        f._id === foodId ? response.food : f
-                                    );
-                                    this.renderFoods();
-                                    modal.hide();
-                                    this.showSuccess('Food updated successfully');
-                                } else {
-                                    this.showError(response.message || 'Failed to update food');
-                                }
-                            } catch (error) {
-                                console.error('Error updating food:', error);
-                                this.showError('Failed to update food');
-                            }
-                        });
-                    }
+                // Check if all form elements exist
+                if (!editFoodId || !editName || !editCuisine || !editDescription || !editPrice || !editImage) {
+                    console.error('Missing form elements:', {
+                        editFoodId: !!editFoodId,
+                        editName: !!editName,
+                        editCuisine: !!editCuisine,
+                        editDescription: !!editDescription,
+                        editPrice: !!editPrice,
+                        editImage: !!editImage
+                    });
+                    this.showError('Form elements not found');
+                    return;
                 }
+
+                // Populate form with food data
+                editFoodId.value = food._id;
+                editName.value = food.name;
+                editCuisine.value = food.cuisine;
+                editDescription.value = food.description;
+                editPrice.value = food.price;
+                editImage.value = food.image || '';
+
+                // Show edit modal
+                const editModal = new bootstrap.Modal(document.getElementById('editFoodModal'));
+                editModal.show();
             } catch (error) {
-                console.error('Error preparing edit form:', error);
-                this.showError('Failed to prepare edit form');
+                console.error('Error in handleEditFood:', error);
+                this.showError('Error loading food details');
             }
         }
 
         async handleDeleteFood(foodId) {
             try {
+                console.log('Deleting food with ID:', foodId);
+                
+                // Confirm deletion
                 if (!confirm('Are you sure you want to delete this food item?')) {
                     return;
                 }
-
-                const response = await window.api.admin.deleteFood(foodId);
-                if (response.success) {
-                    // Remove food from state
+                
+                // Call the API to delete the food
+                const result = await window.api.admin.deleteFood(foodId);
+                
+                if (result.success) {
+                    // Remove the food from the state
                     this.state.data.foods = this.state.data.foods.filter(f => f._id !== foodId);
+                    
+                    // Update the UI
                     this.renderFoods();
+                    
+                    // Show success message
                     this.showSuccess('Food deleted successfully');
                 } else {
-                    this.showError(response.message || 'Failed to delete food');
+                    throw new Error(result.message);
                 }
             } catch (error) {
                 console.error('Error deleting food:', error);
@@ -491,10 +579,72 @@ const Admin = (function() {
                 alert(message);
             }
         }
+
+        handleSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.food-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checked;
+                const foodId = checkbox.dataset.foodId;
+                if (checked) {
+                    this.state.selectedFoods.add(foodId);
+                } else {
+                    this.state.selectedFoods.delete(foodId);
+                }
+            });
+            this.updateDeleteSelectedButton();
+        }
+
+        handleSelectFood(foodId, checked) {
+            if (checked) {
+                this.state.selectedFoods.add(foodId);
+            } else {
+                this.state.selectedFoods.delete(foodId);
+            }
+            this.updateDeleteSelectedButton();
+        }
+
+        updateDeleteSelectedButton() {
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.style.display = this.state.selectedFoods.size > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        async handleDeleteSelected() {
+            if (this.state.selectedFoods.size === 0) return;
+
+            if (!confirm(`Are you sure you want to delete ${this.state.selectedFoods.size} selected food(s)?`)) {
+                return;
+            }
+
+            try {
+                const deletePromises = Array.from(this.state.selectedFoods).map(foodId => 
+                    window.api.admin.deleteFood(foodId)
+                );
+
+                await Promise.all(deletePromises);
+                
+                // Clear selected foods
+                this.state.selectedFoods.clear();
+                
+                // Update UI
+                this.updateDeleteSelectedButton();
+                document.getElementById('selectAllCheckbox').checked = false;
+                
+                // Reload foods
+                await this.loadFoods();
+                
+                this.showSuccess(`${this.state.selectedFoods.size} food(s) deleted successfully`);
+            } catch (error) {
+                console.error('Error deleting selected foods:', error);
+                this.showError('Failed to delete selected foods');
+            }
+        }
     }
 
-    return new AdminClass();
+    // Return the AdminClass constructor
+    return AdminClass;
 })();
 
-// Make Admin available globally
+// Expose Admin to window
 window.Admin = Admin;

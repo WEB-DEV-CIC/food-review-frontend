@@ -29,6 +29,9 @@
 
     body {
       background-color: var(--gray-100);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .hero-section {
@@ -38,24 +41,19 @@
       padding: 4rem 0;
       color: var(--white);
       margin-bottom: 3rem;
+      text-align: center;
     }
 
     .hero-content {
-      text-align: center;
       max-width: 800px;
       margin: 0 auto;
-      animation: fadeInUp 1s ease-out;
+      padding: 0 1rem;
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .hero-content h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
     }
 
     .search-section {
@@ -63,68 +61,41 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      margin-top: -3rem;
+      margin-top: -5rem;
+      margin-bottom: 2rem;
       position: relative;
       z-index: 1;
-      animation: slideInUp 0.8s ease-out;
-    }
-
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     .search-container {
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
     .search-input {
-      border: none;
-      border-radius: 50px;
-      padding: 1rem 1.5rem;
-      font-size: 1.1rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      outline: none;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 1rem;
     }
 
     .filter-container {
-      max-width: 250px;
-      margin: 1rem auto 0;
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
-      justify-content: center;
     }
 
     .filter-select,
     .sort-select {
-      border: none;
-      border-radius: 50px;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      background-color: var(--gray-100);
-      cursor: pointer;
-      transition: all 0.3s ease;
+      flex: 1;
       min-width: 200px;
-    }
-
-    .filter-select:focus,
-    .sort-select:focus {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      outline: none;
+      padding: 0.75rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background-color: var(--white);
+      color: var(--gray-700);
     }
 
     .food-grid {
@@ -139,10 +110,7 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.5s ease-out forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .food-card:hover {
@@ -150,15 +118,10 @@
       box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     }
 
-    .food-card img {
+    .food-image {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .food-card:hover img {
-      transform: scale(1.05);
     }
 
     .food-info {
@@ -166,296 +129,342 @@
     }
 
     .food-info h3 {
-      margin-bottom: 0.5rem;
-      color: var(--gray-900);
+      margin: 0 0 0.5rem;
       font-size: 1.25rem;
-      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .cuisine {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
     }
 
     .rating {
-      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
     }
 
-    .region {
-      color: var(--gray-600);
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .stars {
+      color: #fbbf24;
     }
 
-    .taste-profiles,
-    .dietary-restrictions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .taste-tag,
-    .diet-tag {
-      background: var(--gray-100);
+    .rating-value {
       color: var(--gray-700);
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      transition: all 0.3s ease;
+      font-weight: 500;
     }
 
-    .taste-tag:hover,
-    .diet-tag:hover {
-      background: var(--primary-green);
-      color: var(--white);
+    .price {
+      color: var(--primary-green);
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
     }
 
-    .view-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--primary-green);
+    .view-details-btn {
+      display: inline-block;
+      background-color: var(--primary-green);
       color: var(--white);
       padding: 0.75rem 1.5rem;
-      border-radius: 50px;
+      border-radius: 8px;
       text-decoration: none;
       font-weight: 500;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
+      transition: background-color 0.3s ease;
       width: 100%;
-      justify-content: center;
+      text-align: center;
     }
 
-    .view-button:hover {
-      background: var(--dark-green);
-      transform: translateY(-2px);
+    .view-details-btn:hover {
+      background-color: var(--dark-green);
       color: var(--white);
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 4rem 0;
-      color: var(--gray-600);
+    .footer {
+      background-color: var(--gray-900);
+      color: var(--white);
+      padding: 4rem 0 2rem;
+      margin-top: auto;
     }
 
-    .empty-state i {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+    .footer h3 {
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+    }
+
+    .footer p {
       color: var(--gray-400);
+      margin-bottom: 0.5rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .social-links a {
+      color: var(--gray-400);
+      font-size: 1.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .social-links a:hover {
+      color: var(--primary-green);
+    }
+
+    .footer-bottom {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--gray-800);
+      text-align: center;
+    }
+
+    .footer-bottom a {
+      color: var(--gray-400);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-bottom a:hover {
+      color: var(--primary-green);
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--gray-600);
+      padding: 2rem;
+      grid-column: 1 / -1;
     }
 
     @media (max-width: 768px) {
-      .hero-section {
-        padding: 3rem 0;
+      .hero-content h1 {
+        font-size: 2rem;
       }
 
       .search-section {
+        margin-top: -3rem;
         padding: 1.5rem;
-        margin-top: -2rem;
+      }
+
+      .filter-container {
+        flex-direction: column;
+      }
+
+      .filter-select,
+      .sort-select {
+        width: 100%;
       }
 
       .food-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 1.5rem 0;
-      }
-
-      .food-card img {
-        height: 180px;
+        padding: 1rem 0;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
-  <header>
-    <div id="navbar-container"></div>
-  </header>
+  <div id="navbar-placeholder"></div>
 
-  <main id="mainContent">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="container">
-        <div class="hero-content">
-          <h1 class="display-4 mb-3">Discover Amazing Food</h1>
-          <p class="lead">Explore our curated collection of the finest restaurants and dishes</p>
-        </div>
-      </div>
-    </section>
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>Discover Amazing Foods</h1>
+      <p>Browse through our curated collection of delicious dishes from around the world</p>
+    </div>
+  </div>
 
-    <!-- Search and Filter Section -->
-    <section class="search-section">
-      <div class="container">
-        <div class="search-container">
-          <input type="text" id="searchInput" class="form-control search-input" placeholder="Search for restaurants or dishes...">
-        </div>
+  <div class="container">
+    <div class="search-section">
+      <div class="search-container">
+        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search for dishes">
         <div class="filter-container">
-          <select id="filterDropdown" class="form-select filter-select" aria-label="Filter">
-            <option selected value="">All Cuisines</option>
-            <option value="italian">Italian</option>
-            <option value="asian">Asian</option>
-            <option value="chinese">Chinese</option>
+          <select id="cuisineFilter" class="form-select filter-select">
+            <option value="">All Cuisines</option>
+            <option value="Italian">Italian</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Mexican">Mexican</option>
+            <option value="Indian">Indian</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Thai">Thai</option>
+            <option value="French">French</option>
+            <option value="Greek">Greek</option>
           </select>
-          <select id="sortDropdown" class="form-select sort-select" aria-label="Sort Filter">
-            <option selected value="">Sort By</option>
+          <select id="sortBy" class="form-select sort-select">
+            <option value="">Sort By</option>
+            <option value="rating">Rating</option>
+            <option value="price">Price</option>
             <option value="alphabetic">Alphabetic</option>
             <option value="latest">Latest</option>
             <option value="reviews">Most Reviews</option>
           </select>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Food Grid Section -->
-    <section class="container">
-      <div id="featuredFoods" class="food-grid">
-      </div>
-    </section>
-  </main>
+    <div id="foodGrid" class="food-grid">
+      <!-- Food cards will be dynamically inserted here -->
+    </div>
+  </div>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
+      <div class="row">
+        <div class="col-md-4">
           <h3>About FoodxBites</h3>
           <p>Discover the best culinary experiences with FoodxBites. We connect food enthusiasts with exceptional restaurants and dining experiences.</p>
-          <div class="social-links">
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          </div>
         </div>
-        <div class="footer-section">
+        <div class="col-md-4">
           <h3>Contact Us</h3>
-          <ul class="footer-links">
-            <li><a href="mailto:info@foodxbites.com"><i class="fas fa-envelope"></i> info@foodxbites.com</a></li>
-            <li><a href="tel:+358466863053"><i class="fas fa-phone"></i> +358 46 686 3053</a></li>
-          </ul>
+          <p><i class="fas fa-envelope"></i> info@foodxbites.com</p>
+          <p><i class="fas fa-phone"></i> +358 46 686 3053</p>
+        </div>
+        <div class="col-md-4">
+          <h3>Follow Us</h3>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#" class="footer-link">Privacy Policy</a> | <a href="#" class="footer-link">Terms of Service</a></p>
+        <p>&copy; 2024 FoodxBites. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
       </div>
     </div>
   </footer>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/auth.js"></script>
-  <script src="./js/foods.js"></script>
+  <script src="./js/navbar.js"></script>
   <script>
-    // Load navbar and initialize functionality
-    document.addEventListener('DOMContentLoaded', () => {
-      // Load navbar first
-      fetch('./components/navbar.html')
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById('navbar-container').innerHTML = data;
-          // Initialize auth after navbar is loaded
-          if (typeof auth !== 'undefined') {
-            auth.init();
-          }
-        })
-        .catch(error => {
-          console.error('Error loading navbar:', error);
-        });
+    const API_BASE_URL = 'http://localhost:5000/api/v1';
+    let currentFoods = [];
 
-      // Initialize foods functionality after DOM is fully loaded
-      if (typeof foods !== 'undefined') {
-        // Small delay to ensure DOM is fully rendered
-        setTimeout(() => {
-          foods.init();
-        }, 100);
-      }
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadFoods();
+      setupEventListeners();
     });
 
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      const foodCards = document.querySelectorAll('.food-card');
-
-      foodCards.forEach(card => {
-        const foodName = card.querySelector('h3').textContent.toLowerCase();
-        const foodRegion = card.querySelector('.region').textContent.toLowerCase();
-
-        if (foodName.includes(searchTerm) || foodRegion.includes(searchTerm)) {
-          card.style.display = 'block';
-          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-        } else {
-          card.style.display = 'none';
+    async function loadFoods() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/foods`);
+        const data = await response.json();
+        if (data.foods) {
+          currentFoods = data.foods;
+          renderFoods(currentFoods);
         }
+      } catch (error) {
+        console.error('Error loading foods:', error);
+      }
+    }
+
+    function setupEventListeners() {
+      const searchInput = document.getElementById('searchInput');
+      const cuisineFilter = document.getElementById('cuisineFilter');
+      const sortBy = document.getElementById('sortBy');
+
+      // Debounce search input
+      let searchTimeout;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          applyFilters();
+        }, 300);
       });
-    });
 
-    // Filter functionality for cuisine
-    document.getElementById('filterDropdown').addEventListener('change', function(e) {
-      const filterValue = e.target.value.toLowerCase();
-      const foodCards = document.querySelectorAll('.food-card');
+      // Add event listeners for filters and sort
+      cuisineFilter.addEventListener('change', applyFilters);
+      sortBy.addEventListener('change', applyFilters);
+    }
 
-      // Reset display for all cards if no filter is selected
-      if (!filterValue) {
-        foodCards.forEach(card => {
-          card.style.display = 'block';
-          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-        });
+    async function applyFilters() {
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const cuisine = document.getElementById('cuisineFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      try {
+        let url = `${API_BASE_URL}/foods?`;
+        if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+        if (cuisine) url += `&cuisine=${encodeURIComponent(cuisine)}`;
+        if (sortBy) url += `&sort=${encodeURIComponent(sortBy)}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.foods) {
+          renderFoods(data.foods);
+        }
+      } catch (error) {
+        console.error('Error applying filters:', error);
+      }
+    }
+
+    function renderFoods(foods) {
+      const foodGrid = document.getElementById('foodGrid');
+      if (!foodGrid) {
+        console.error('Food grid container not found');
         return;
       }
-
-      foodCards.forEach(card => {
-        const foodRegion = card.querySelector('.region').textContent.toLowerCase();
-        if (foodRegion.includes(filterValue)) {
-          card.style.display = 'block';
-          card.style.animation = 'fadeInUp 0.5s ease-out forwards';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-
-    // Sort functionality
-    document.getElementById('sortDropdown').addEventListener('change', function(e) {
-      const sortValue = e.target.value;
-      const container = document.getElementById('featuredFoods');
-      const foodCards = Array.from(container.querySelectorAll('.food-card'));
-
-      let sortedCards;
-
-      if(sortValue === 'alphabetic') {
-        // Sort alphabetically by food name (from <h3>)
-        sortedCards = foodCards.sort((a, b) => {
-          const nameA = a.querySelector('h3').textContent.toLowerCase();
-          const nameB = b.querySelector('h3').textContent.toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
-      } else if(sortValue === 'latest') {
-        // Sort by latest date (assuming data-date attribute exists)
-        sortedCards = foodCards.sort((a, b) => {
-          const dateA = new Date(a.getAttribute('data-date'));
-          const dateB = new Date(b.getAttribute('data-date'));
-          return dateB - dateA;
-        });
-      } else if(sortValue === 'reviews') {
-        // Sort by most reviews (assuming data-reviews attribute exists)
-        sortedCards = foodCards.sort((a, b) => {
-          const reviewsA = parseInt(a.getAttribute('data-reviews') || '0', 10);
-          const reviewsB = parseInt(b.getAttribute('data-reviews') || '0', 10);
-          return reviewsB - reviewsA;
-        });
-      } else {
-        // If no valid sort value is selected, do nothing
+      foodGrid.innerHTML = '';
+      
+      if (foods.length === 0) {
+        foodGrid.innerHTML = '<p class="no-results">No food items found matching your criteria.</p>';
         return;
       }
+      
+      // Create a copy of the foods array to avoid modifying the original
+      let displayFoods = [...foods];
+      
+      // Get the current sort option
+      const sortBy = document.getElementById('sortBy').value;
+      
+      // Apply client-side sorting if needed
+      if (sortBy) {
+        switch(sortBy) {
+          case 'price':
+            displayFoods.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            break;
+          case 'rating':
+            displayFoods.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+            break;
+          case 'alphabetic':
+            displayFoods.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          case 'latest':
+            displayFoods.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+          case 'reviews':
+            displayFoods.sort((a, b) => parseInt(b.reviewCount) - parseInt(a.reviewCount));
+            break;
+        }
+      }
+      
+      // Render the sorted foods
+      displayFoods.forEach(food => {
+        const foodCard = createFoodCard(food);
+        foodGrid.appendChild(foodCard);
+      });
+    }
 
-      // Clear container and re-append sorted cards
-      container.innerHTML = '';
-      sortedCards.forEach(card => container.appendChild(card));
-    });
+    function createFoodCard(food) {
+      const card = document.createElement('div');
+      card.className = 'food-card';
+      card.innerHTML = `
+        <img src="${food.image}" alt="${food.name}" class="food-image">
+        <div class="food-info">
+          <h3>${food.name}</h3>
+          <p class="cuisine">${food.cuisine}</p>
+          <div class="rating">
+            <span class="stars">${'★'.repeat(Math.floor(food.rating))}${'☆'.repeat(5 - Math.floor(food.rating))}</span>
+            <span class="rating-value">${food.rating.toFixed(1)}</span>
+          </div>
+          <p class="price">$${food.price.toFixed(2)}</p>
+          <a href="food-details.html?id=${food._id}" class="view-details-btn">View Details</a>
+        </div>
+      `;
+      return card;
+    }
   </script>
 </body>
 </html>
