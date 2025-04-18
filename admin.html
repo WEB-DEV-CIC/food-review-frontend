@@ -797,12 +797,16 @@
                             <input type="text" class="form-control" id="foodName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="foodRegion" class="form-label">Region</label>
-                            <input type="text" class="form-control" id="foodRegion" required>
+                            <label for="foodCuisine" class="form-label">Cuisine</label>
+                            <input type="text" class="form-control" id="foodCuisine" required>
                         </div>
                         <div class="mb-3">
                             <label for="foodDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="foodDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="foodPrice" class="form-label">Price</label>
+                            <input type="text" class="form-control" id="foodPrice" required>
                         </div>
                         <div class="mb-3">
                             <label for="foodImage" class="form-label">Image URL</label>
@@ -885,6 +889,19 @@
     
     <!-- Initialize admin page -->
     <script>
+         const foodName = document.querySelector('#foodName');
+                const foodCuisine = document.querySelector('#foodCuisine');
+                const foodDescription = document.querySelector('#foodDescription');
+                const foodPrice = document.querySelector('#foodPrice');
+                const foodImage = document.querySelector('#foodImage');
+
+                console.log('foodName:', foodName);
+                console.log('foodCuisine:', foodCuisine);
+                console.log('foodDescription:', foodDescription);
+                console.log('foodPrice:', foodPrice);
+                console.log('foodImage:', foodImage);
+
+                
         async function initializeAdminPage() {
             console.log('Initializing admin page...');
 

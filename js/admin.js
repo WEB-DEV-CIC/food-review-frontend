@@ -62,6 +62,8 @@ const Admin = (function() {
                 this.showError('Failed to initialize admin panel');
             }
         }
+
+ 
         
         initializeEventListeners() {
             console.log('Initializing admin event listeners...');
@@ -84,9 +86,13 @@ const Admin = (function() {
             // Save food button
             const saveFoodBtn = document.getElementById('saveFoodBtn');
             if (saveFoodBtn) {
-                saveFoodBtn.addEventListener('click', () => {
-                    this.handleAddFood();
+                saveFoodBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent default behavior
+                    console.log('Save Food button clicked');
+                    this.handleAddFood(); // Call the handleAddFood function
                 });
+            } else {
+                console.warn('Save Food button not found in the DOM');
             }
             
             // Search input
@@ -286,14 +292,54 @@ const Admin = (function() {
 
         async handleAddFood() {
             try {
+                console.log('Starting to handle Add Food...');
+
+                // Check if modal exists
+                const modal = document.getElementById('addFoodModal');
+                if (!modal) {
+                    console.error('Add Food Modal not found in the DOM');
+                    this.showError('Add Food Modal is not available');
+                    return;
+                }
+
+                // Ensure modal is visible
+                if (!modal.classList.contains('show')) {
+                    console.warn('Add Food Modal is not visible');
+                    this.showError('Please open the Add Food Modal before saving');
+                    return;
+                }
+
+                // Check form elements
+                const foodName = document.querySelector('#foodName');
+                const foodCuisine = document.querySelector('#foodCuisine');
+                const foodDescription = document.querySelector('#foodDescription');
+                const foodPrice = document.querySelector('#foodPrice');
+                const foodImage = document.querySelector('#foodImage');
+
+                console.log('foodName:', foodName);
+                console.log('foodCuisine:', foodCuisine);
+                console.log('foodDescription:', foodDescription);
+                console.log('foodPrice:', foodPrice);
+                console.log('foodImage:', foodImage);
+
+                // Ensure all elements exist
+                if (!foodName || !foodCuisine || !foodDescription || !foodPrice || !foodImage) {
+                    console.error('One or more form elements are missing');
+                    this.showError('Form elements are not properly loaded');
+                    return;
+                }
+
                 // Get form values
-                const name = document.getElementById('foodName').value;
-                const region = document.getElementById('foodRegion').value;
-                const description = document.getElementById('foodDescription').value;
-                const image = document.getElementById('foodImage').value;
+                const name = foodName.value;
+                const cuisine = foodCuisine.value;
+                const description = foodDescription.value;
+                const price = parseFloat(foodPrice.value);
+                const image = foodImage.value;
+
+                console.log('Form values:', { name, cuisine, description, price, image });
 
                 // Validate required fields
-                if (!name || !region || !description || !image) {
+                if (!name || !cuisine || !description || !price || !image) {
                     this.showError('Please fill in all required fields');
                     return;
                 }
@@ -304,40 +350,37 @@ const Admin = (function() {
                     return;
                 }
 
-                console.log('Submitting new food:', { name, region, description, image });
+                console.log('Submitting food data to API...');
 
                 // Make API call to create food
-                const response = await window.api.food.create({
-                    name,
-                    region,
-                    description,
-                    image,
-                    cuisine: region, // Using region as cuisine for now
-                    price: 0 // Default price
+                const response = await fetch('http://localhost:5000/api/v1/admin/foods', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include admin token
+                    },
+                    body: JSON.stringify({ name, cuisine, description, price, image }),
                 });
 
-                console.log('API Response:', response);
+                const result = await response.json();
 
-                if (response && response.success) {
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addFoodModal'));
-                    if (modal) {
-                        modal.hide();
-                    }
-                    
+                if (response.ok) {
+                    console.log('Food added successfully:', result);
+
                     // Clear form
                     document.getElementById('addFoodForm').reset();
-                    
+
                     // Show success message
                     this.showSuccess('Food added successfully');
-                    
-                    // Reload dashboard
-                    await this.loadDashboard();
-                    
-                    // Show dashboard section
-                    this.showSection('dashboard');
+
+                    // Reload foods
+                    await this.loadFoods();
+
+                    // Switch to foods section
+                    this.switchSection('foods');
                 } else {
-                    throw new Error(response?.message || 'Failed to add food');
+                    console.error('API Error:', result.error);
+                    throw new Error(result.error || 'Failed to add food');
                 }
             } catch (error) {
                 console.error('Failed to add food:', error);
