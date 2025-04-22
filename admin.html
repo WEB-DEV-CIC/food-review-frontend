@@ -713,8 +713,34 @@
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
                         <div class="dashboard-stat">
+                            <h5>Total Users</h5>
+                            <h2 id="totalUsers">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="dashboard-stat">
                             <h5>Total Reviews</h5>
                             <h2 id="totalReviews">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="dashboard-stat">
+                            <h5>Average Rating</h5>
+                            <h2 id="averageRating">0.0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Activity</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActivity" class="list-group">
+                                    <!-- Recent activity will be rendered here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -735,9 +761,12 @@
                 </div>
                 <input type="text" id="foodSearch" class="search-input" placeholder="Search foods...">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" id="foodsTable">
                         <thead>
                             <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAllCheckbox">
+                                </th>
                                 <th>Name</th>
                                 <th>Cuisine</th>
                                 <th>Price</th>
@@ -745,8 +774,8 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="foodsTableBody">
-                            <!-- Foods will be rendered here -->
+                        <tbody>
+                            <!-- Foods will be loaded here -->
                         </tbody>
                     </table>
                 </div>
@@ -828,8 +857,8 @@
                             <input type="text" class="form-control" id="editName" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editCuisine" class="form-label">Cuisine</label>
-                            <input type="text" class="form-control" id="editCuisine" name="cuisine" required>
+                            <label for="editCuisine" class="form-label">Region</label>
+                            <input type="text" class="form-control" id="editCuisine" name="region_name" required>
                         </div>
                         <div class="mb-3">
                             <label for="editDescription" class="form-label">Description</label>
@@ -841,11 +870,14 @@
                         </div>
                         <div class="mb-3">
                             <label for="editImage" class="form-label">Image URL</label>
-                            <input type="url" class="form-control" id="editImage" name="image" required>
+                            <input type="url" class="form-control" id="editImage" name="image_url" required>
                             <div class="form-text">Enter a valid image URL (must start with http:// or https://)</div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="editFoodForm">Save Changes</button>
                 </div>
             </div>
         </div>

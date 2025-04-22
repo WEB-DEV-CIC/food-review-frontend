@@ -20,25 +20,25 @@
             <div class="col-md-6">
                 <div class="auth-container">
                     <h2 class="text-center mb-4">Create Account</h2>
-                    <form id="registerForm">
+                    <form id="registerForm" onsubmit="auth.handleRegister(event)">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="name" required>
-                            <div class="error-message" id="nameError"></div>
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="error-message" id="usernameError"></div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" required>
+                            <input type="email" class="form-control" id="email" name="email" required>
                             <div class="error-message" id="emailError"></div>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" required>
+                            <input type="password" class="form-control" id="password" name="password" required>
                             <div class="error-message" id="passwordError"></div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
                             <div class="error-message" id="confirmPasswordError"></div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100" id="registerButton">
