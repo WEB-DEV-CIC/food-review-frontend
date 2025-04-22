@@ -4,13 +4,19 @@ const api = {
     baseUrl: 'http://localhost:5000/api/v1',
 
     // Headers
-    getHeaders() {
+    getHeaders(method = 'GET', endpoint = '') {
         const token = localStorage.getItem('token');
-        return {
+        const headers = {
             'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : '',
             'Accept': 'application/json'
         };
+        
+        // Only include Authorization header for non-GET requests or non-food endpoints
+        if (method !== 'GET' || !endpoint.startsWith('/foods')) {
+            headers['Authorization'] = token ? `Bearer ${token}` : '';
+        }
+        
+        return headers;
     },
 
     handleResponse: async (response) => {
@@ -143,7 +149,7 @@ const api = {
                 const url = `${api.baseUrl}/foods${queryString ? `?${queryString}` : ''}`;
                 console.log('Making request to:', url);
                 const response = await fetch(url, {
-                    headers: api.getHeaders()
+                    headers: api.getHeaders('GET', '/foods')
                 });
                 
                 console.log('Response status:', response.status);
@@ -164,7 +170,7 @@ const api = {
 
         async getById(id) {
             const response = await fetch(`${api.baseUrl}/foods/${id}`, {
-                headers: api.getHeaders()
+                headers: api.getHeaders('GET', '/foods')
             });
             if (!response.ok) throw new Error('Failed to fetch food');
             return response.json();

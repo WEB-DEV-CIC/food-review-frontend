@@ -36,6 +36,7 @@ const Admin = (function() {
             this.handleSelectAll = this.handleSelectAll.bind(this);
             this.handleSelectFood = this.handleSelectFood.bind(this);
             this.handleDeleteSelected = this.handleDeleteSelected.bind(this);
+            this.handleDeleteAll = this.handleDeleteAll.bind(this);
         }
 
         static getInstance() {
@@ -69,6 +70,7 @@ const Admin = (function() {
                 // Load initial data
                 await this.loadDashboardData();
                 await this.loadFoods();
+                this.initializeFoodFilter(); // Initialize food search filter
 
                 // Show initial section based on hash
                 const currentHash = window.location.hash.substring(1) || 'dashboard';
@@ -95,6 +97,37 @@ const Admin = (function() {
                 const section = window.location.hash.substring(1) || 'dashboard';
                 this.switchSection(section);
             });
+            
+            // Delete All button
+            const deleteAllBtn = document.getElementById('deleteAllBtn');
+            if (deleteAllBtn) {
+                deleteAllBtn.addEventListener('click', () => {
+                    this.handleDeleteAll();
+                });
+            }
+
+            // Select all checkbox
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', (e) => {
+                    this.handleSelectAll(e.target.checked);
+                });
+            }
+
+            // Individual food checkboxes (using event delegation)
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('food-checkbox')) {
+                    this.handleSelectFood(e.target.value);
+                }
+            });
+
+            // Delete selected button
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.addEventListener('click', () => {
+                    this.handleDeleteSelected();
+                });
+            }
             
             // Add food form
             const addFoodForm = document.getElementById('addFoodForm');
@@ -168,28 +201,18 @@ const Admin = (function() {
                     this.handleAddFood();
                 });
             }
-
-            // Select all checkbox
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', (e) => {
-                    this.handleSelectAll(e.target.checked);
-                });
-            }
-
-            // Delete selected button
-            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            if (deleteSelectedBtn) {
-                deleteSelectedBtn.addEventListener('click', () => {
-                    this.handleDeleteSelected();
-                });
-            }
             
             // Search input
             const searchInput = document.getElementById('foodSearch');
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
-                    this.handleSearch(e.target.value);
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredFoods = this.state.data.foods.filter(food => 
+                        food.name.toLowerCase().includes(searchTerm) ||
+                        food.region_name.toLowerCase().includes(searchTerm) ||
+                        food.description.toLowerCase().includes(searchTerm)
+                    );
+                    this.renderFoods(filteredFoods);
                 });
             }
 
@@ -229,13 +252,6 @@ const Admin = (function() {
                     } else {
                         this.showError('No food ID found on delete button');
                     }
-                }
-            });
-            
-            // Handle individual food checkboxes
-            document.addEventListener('change', (e) => {
-                if (e.target.classList.contains('food-checkbox')) {
-                    this.handleSelectFood(e.target.value);
                 }
             });
             
@@ -331,6 +347,7 @@ const Admin = (function() {
                 
                 this.state.data.foods = foods;
                 this.renderFoods();
+                this.initializeFoodFilter(); // Initialize the search filter
                 
                 this.state.loading.foods = false;
             } catch (error) {
@@ -602,15 +619,93 @@ const Admin = (function() {
         }
 
         handleSelectAll(checked) {
-            // Implementation for selecting all foods
+            const checkboxes = document.querySelectorAll('.food-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checked;
+                const foodId = checkbox.value;
+                if (checked) {
+                    this.state.selectedFoods.add(foodId);
+                } else {
+                    this.state.selectedFoods.delete(foodId);
+                }
+            });
+            this.updateDeleteSelectedButton();
         }
 
         handleSelectFood(foodId) {
-            // Implementation for selecting a single food
+            const checkbox = document.querySelector(`.food-checkbox[value="${foodId}"]`);
+            if (checkbox) {
+                if (checkbox.checked) {
+                    this.state.selectedFoods.add(foodId);
+                } else {
+                    this.state.selectedFoods.delete(foodId);
+                }
+                this.updateDeleteSelectedButton();
+            }
         }
 
-        handleDeleteSelected() {
-            // Implementation for deleting selected foods
+        async handleDeleteSelected() {
+            if (this.state.selectedFoods.size === 0) {
+                this.showError('Please select at least one food to delete');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${this.state.selectedFoods.size} selected food(s)?`)) {
+                return;
+            }
+
+            try {
+                const deletePromises = Array.from(this.state.selectedFoods).map(foodId => 
+                    window.api.admin.deleteFood(foodId)
+                );
+
+                await Promise.all(deletePromises);
+                
+                // Remove deleted foods from state
+                this.state.data.foods = this.state.data.foods.filter(food => 
+                    !this.state.selectedFoods.has(food.id.toString())
+                );
+                
+                // Clear selection
+                this.state.selectedFoods.clear();
+                
+                // Update UI
+                this.renderFoods();
+                this.showSuccess(`${this.state.selectedFoods.size} food(s) deleted successfully`);
+                
+            } catch (error) {
+                console.error('Error deleting selected foods:', error);
+                this.showError('Failed to delete selected foods');
+            }
+        }
+
+        async handleDeleteAll() {
+            if (!confirm('Are you sure you want to delete ALL foods? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                // Get all food IDs
+                const foodIds = this.state.data.foods.map(food => food.id);
+                
+                // Delete all foods in parallel
+                const deletePromises = foodIds.map(foodId => 
+                    window.api.admin.deleteFood(foodId)
+                );
+
+                await Promise.all(deletePromises);
+                
+                // Clear the foods array
+                this.state.data.foods = [];
+                
+                // Update UI
+                this.renderFoods();
+                this.showSuccess('All foods deleted successfully');
+                
+            } catch (error) {
+                console.error('Error deleting all foods:', error);
+                this.showError('Failed to delete all foods');
+            }
         }
     }
 

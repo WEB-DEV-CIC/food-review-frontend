@@ -138,62 +138,6 @@
             }
         });
 
-        // Load food details
-        async function loadFoodDetails() {
-            try {
-                if (!window.api || !window.api.food) {
-                    console.error('API module not loaded');
-                    showFallbackUI();
-                    return;
-                }
-
-                console.log('Loading food details for ID:', foodId);
-                const response = await window.api.food.getById(foodId);
-                console.log('Food details response:', response);
-                
-                const food = response; // The food object is directly in the response
-                
-                if (food) {
-                    // Create image URL with fallback
-                    const imageUrl = food.image || 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';
-                    
-                    document.getElementById('foodDetails').innerHTML = `
-                        <div class="food-detail-card">
-                            <div class="food-image">
-                                <img src="${imageUrl}" 
-                                    alt="${food.name}" 
-                                    class="food-detail-image"
-                                    style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;"
-                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';">
-                            </div>
-                            <div class="food-detail-info">
-                                <h1>${food.name}</h1>
-                                <div class="rating">${generateStarRating(food.average_rating)}</div>
-                                <p class="description">${food.description}</p>
-                                <div class="food-meta">
-                                    <span class="region"><i class="fas fa-map-marker-alt"></i> ${food.region_name}</span>
-                                    <span class="price"><i class="fas fa-tag"></i> $${food.price ? food.price.toFixed(2) : 'N/A'}</span>
-                                </div>
-                                ${food.tags ? `
-                                    <div class="tags">
-                                        ${food.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-
-                    // Load reviews
-                    loadReviews();
-                } else {
-                    showFallbackUI();
-                }
-            } catch (error) {
-                console.error('Error loading food details:', error);
-                showFallbackUI();
-            }
-        }
-
         // Show fallback UI when there's an error
         function showFallbackUI() {
             document.getElementById('foodDetails').innerHTML = `
@@ -217,25 +161,13 @@
                     </div>
                 </div>
             `;
-            
-            // Show a friendly message instead of an error
-            document.getElementById('reviewsList').innerHTML = `
-                <h3>Reviews</h3>
-                <p class="text-muted">We're having trouble loading the reviews right now. Please try again later or check out our other food items.</p>
-                <div class="text-center mt-4">
-                    <a href="food.html" class="btn btn-primary">Browse More Foods</a>
-                </div>
-            `;
         }
 
         // Load reviews
-        async function loadReviews() {
+        async function loadReviews(foodData) {
             try {
-                console.log('Loading reviews for food ID:', foodId);
-                const response = await window.api.food.getById(foodId);
-                console.log('Food details response:', response);
-                
-                const reviews = response.reviews || [];
+                console.log('Loading reviews from food data:', foodData);
+                const reviews = foodData.reviews || [];
                 console.log('Reviews data:', reviews);
 
                 if (reviews && reviews.length > 0) {
@@ -248,8 +180,12 @@
                                         <div class="review-rating">${generateStarRating(review.rating)}</div>
                                         <div class="review-date">${new Date(review.created_at).toLocaleDateString()}</div>
                                     </div>
-                                    <p class="review-text">${review.comment}</p>
-                                    <div class="review-author">By: ${review.username}</div>
+                                    <div class="review-content">
+                                        <p class="review-text">${review.comment || 'No comment provided'}</p>
+                                        <div class="review-author">
+                                            <span class="author-name">${review.username || 'Anonymous'}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -257,7 +193,7 @@
                 } else {
                     document.getElementById('reviewsList').innerHTML = `
                         <h3>Reviews</h3>
-                        <p class="text-muted">No reviews yet. Be the first to review!</p>
+                        <p class="text-muted">No reviews yet. Be the first to review this food!</p>
                     `;
                 }
             } catch (error) {
@@ -266,6 +202,72 @@
                     <h3>Reviews</h3>
                     <p class="text-muted">We're having trouble loading the reviews right now. Please try again later.</p>
                 `;
+            }
+        }
+
+        // Load food details
+        async function loadFoodDetails() {
+            try {
+                if (!window.api || !window.api.food) {
+                    console.error('API module not loaded');
+                    showFallbackUI();
+                    return;
+                }
+
+                console.log('Loading food details for ID:', foodId);
+                const response = await window.api.food.getById(foodId);
+                console.log('Full API response:', JSON.stringify(response, null, 2));
+                console.log('Reviews in response:', response.reviews);
+                
+                const food = response; // The food object is directly in the response
+                
+                if (food) {
+                    // Create image URL with fallback
+                    const imageUrl = food.image_url || 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';
+                    
+                    // Safely handle price formatting
+                    let priceDisplay = 'N/A';
+                    if (food.price !== null && food.price !== undefined && food.price !== '') {
+                        const priceNum = Number(food.price);
+                        if (!isNaN(priceNum)) {
+                            priceDisplay = `$${priceNum.toFixed(2)}`;
+                        }
+                    }
+                    
+                    document.getElementById('foodDetails').innerHTML = `
+                        <div class="food-detail-card">
+                            <div class="food-image">
+                                <img src="${imageUrl}" 
+                                    alt="${food.name}" 
+                                    class="food-detail-image"
+                                    style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px;"
+                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1504754524776-8f4f37790ca0';">
+                            </div>
+                            <div class="food-detail-info">
+                                <h1>${food.name || 'Unnamed Food'}</h1>
+                                <div class="rating">${generateStarRating(food.average_rating || 0)}</div>
+                                <p class="description">${food.description || 'No description available'}</p>
+                                <div class="food-meta">
+                                    <span class="region"><i class="fas fa-map-marker-alt"></i> ${food.region_name || 'Region not specified'}</span>
+                                    <span class="price"><i class="fas fa-tag"></i> ${priceDisplay}</span>
+                                </div>
+                                ${food.taste_profiles && food.taste_profiles.length > 0 ? `
+                                    <div class="tags">
+                                        ${food.taste_profiles.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    // Load reviews using the same food data
+                    loadReviews(food);
+                } else {
+                    showFallbackUI();
+                }
+            } catch (error) {
+                console.error('Error loading food details:', error);
+                showFallbackUI();
             }
         }
 

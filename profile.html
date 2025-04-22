@@ -20,33 +20,10 @@
         <div class="container">
             <div class="profile-wrapper">
                 <!-- Profile Header -->
-            <div class="profile-header">
-                    <div class="profile-cover">
-                        <div class="profile-avatar">
-                            <img src="profile.jpg" alt="Profile Picture" id="profile-picture">
-                            <button class="change-avatar" aria-label="Change profile picture" onclick="document.getElementById('avatar-input').click()">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                            <input type="file" id="avatar-input" hidden accept="image/*">
-                        </div>
-                    </div>
+                <div class="profile-header">
                     <div class="profile-info">
-                        <h1 id="full-name">User Full-name</h1>
-                        <p class="user-role"><i class="fas fa-user"></i> Food Enthusiast</p>
-                        <div class="profile-stats">
-                            <div class="stat">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Reviews</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Following</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Followers</span>
-                            </div>
-                        </div>
+                        <h1 id="full-name">Loading...</h1>
+                        <p class="user-role" id="user-role"><i class="fas fa-user"></i> Loading...</p>
                     </div>
                 </div>
 
@@ -54,74 +31,17 @@
                 <div class="profile-content">
                     <div class="row g-3">
                         <!-- Personal Information -->
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <div class="profile-card">
                                 <div class="card-header">
                                     <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
-                                    <button class="edit-btn" aria-label="Edit personal information" onclick="editSection('personal-info')">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
                                 </div>
-                                <div class="card-body" id="personal-info">
-                                    <div class="info-group">
-                                        <label><i class="fas fa-user"></i> First Name</label>
-                                        <span id="first-name">John</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label><i class="fas fa-user"></i> Last Name</label>
-                                        <span id="last-name">Doe</span>
-                                    </div>
+                                <div class="card-body">
                                     <div class="info-group">
                                         <label><i class="fas fa-envelope"></i> Email</label>
-                                        <span id="email">john.doe@example.com</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label><i class="fas fa-phone"></i> Phone</label>
-                                        <span id="phone">+1 234 567 890</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label><i class="fas fa-info-circle"></i> Bio</label>
-                                        <span id="bio">Food lover and restaurant reviewer</span>
+                                        <span id="email">Loading...</span>
                                     </div>
                                 </div>
-                </div>
-            </div>
-
-                        <!-- Address Information -->
-                        <div class="col-12 col-md-6">
-                            <div class="profile-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
-                                    <button class="edit-btn" aria-label="Edit address information" onclick="editSection('address-info')">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                </div>
-                                <div class="card-body" id="address-info">
-                                    <div class="info-group">
-                                        <label><i class="fas fa-globe"></i> Country</label>
-                                        <span id="country">United States</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label><i class="fas fa-city"></i> City/State</label>
-                                        <span id="city-state">New York, NY</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label><i class="fas fa-mail-bulk"></i> Postal Code</label>
-                                        <span id="postal-code">10001</span>
-                                    </div>
-                                </div>
-                            </div>
-                </div>
-            </div> 
-
-                    <!-- Recent Activity -->
-                    <div class="profile-card mt-3">
-                        <div class="card-header">
-                            <h3><i class="fas fa-history"></i> Recent Activity</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="activity-list">
-                                <p class="text-muted">No recent activity</p>
                             </div>
                         </div>
                     </div>
@@ -139,8 +59,8 @@
         // Load navbar and initialize functionality
         document.addEventListener('DOMContentLoaded', () => {
             // Load navbar first
-        fetch('./components/navbar.html')
-            .then(response => response.text())
+            fetch('./components/navbar.html')
+                .then(response => response.text())
                 .then(data => {
                     document.getElementById('navbar-container').innerHTML = data;
                     // Initialize auth after navbar is loaded
@@ -160,83 +80,6 @@
                 }, 100);
             }
         });
-
-        // Profile picture change
-        document.getElementById('avatar-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profile-picture').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-                
-                // Upload profile picture if user is logged in
-                if (typeof profile !== 'undefined' && profile.uploadProfilePicture) {
-                    const userData = JSON.parse(localStorage.getItem('user'));
-                    if (userData && userData._id) {
-                        profile.uploadProfilePicture(userData._id, file);
-                    }
-                }
-            }
-        });
-
-        // Edit section function
-        function editSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            const infoGroups = section.getElementsByClassName('info-group');
-            
-            Array.from(infoGroups).forEach(group => {
-                const span = group.querySelector('span');
-                const currentValue = span.innerText;
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = currentValue;
-                input.className = 'form-control';
-                
-                // Add data-field attribute based on the span ID
-                const spanId = span.id;
-                if (spanId) {
-                    input.setAttribute('data-field', spanId);
-                }
-                
-                span.replaceWith(input);
-            });
-
-            const header = section.closest('.profile-card').querySelector('.card-header');
-            const editBtn = header.querySelector('.edit-btn');
-            editBtn.innerHTML = '<i class="fas fa-save"></i> Save';
-            editBtn.onclick = () => saveSection(sectionId);
-        }
-
-        // Save section function
-        function saveSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            const inputs = section.getElementsByTagName('input');
-            const formData = {};
-            
-            Array.from(inputs).forEach(input => {
-                const span = document.createElement('span');
-                span.innerText = input.value;
-                input.replaceWith(span);
-                
-                // Add to form data
-                const fieldName = input.id || input.getAttribute('data-field');
-                if (fieldName) {
-                    formData[fieldName] = input.value;
-                }
-            });
-
-            const header = section.closest('.profile-card').querySelector('.card-header');
-            const saveBtn = header.querySelector('.edit-btn');
-            saveBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
-            saveBtn.onclick = () => editSection(sectionId);
-            
-            // Save profile changes if user is logged in
-            if (typeof profile !== 'undefined' && profile.saveProfileChanges && Object.keys(formData).length > 0) {
-                profile.saveProfileChanges(formData);
-            }
-        }
     </script>
 </body>
 </html>

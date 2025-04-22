@@ -1,280 +1,143 @@
 // Profile functionality
 const profile = {
     // Initialize profile functionality
-    init() {
-        console.log('Initializing profile functionality');
-        
-        // Check if user is logged in
-        const user = localStorage.getItem('user');
-        if (!user) {
-            console.error('User not logged in');
-            window.location.href = 'login.html';
-            return;
+    async init() {
+        try {
+            console.log('Initializing profile...');
+            await this.loadUserData();
+        } catch (error) {
+            console.error('Error initializing profile:', error);
         }
-        
-        // Load user data
-        this.loadUserData();
-        
-        // Load user reviews
-        this.loadUserReviews();
-        
-        // Load user activity
-        this.loadUserActivity();
     },
     
-    // Load user data from localStorage
-    loadUserData() {
+    // Load user data from API
+    async loadUserData() {
         try {
+            console.log('Loading user data...');
             const userData = JSON.parse(localStorage.getItem('user'));
-            console.log('User data loaded:', userData);
-            
-            if (!userData) {
+            if (!userData || !userData.id) {
                 console.error('No user data found');
                 return;
             }
-            
+
+            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const data = await response.json();
+            console.log('User data loaded:', data);
+
             // Update profile header
-            document.getElementById('full-name').textContent = userData.name || 'User';
+            document.getElementById('full-name').textContent = data.username;
+            document.getElementById('user-role').textContent = data.role || 'Food Enthusiast';
             
             // Update personal information
-            document.getElementById('first-name').textContent = userData.firstName || 'Not provided';
-            document.getElementById('last-name').textContent = userData.lastName || 'Not provided';
-            document.getElementById('email').textContent = userData.email || 'Not provided';
-            document.getElementById('phone').textContent = userData.phone || 'Not provided';
-            document.getElementById('bio').textContent = userData.bio || 'No bio provided';
-            
-            // Update address information
-            document.getElementById('country').textContent = userData.country || 'Not provided';
-            document.getElementById('city-state').textContent = userData.city || 'Not provided';
-            document.getElementById('postal-code').textContent = userData.postalCode || 'Not provided';
-            
-            // Update profile picture if available
-            if (userData.profilePicture) {
-                document.getElementById('profile-picture').src = userData.profilePicture;
-            }
-            
-            // Update profile stats
-            this.updateProfileStats(userData);
-            
-            // If API is not available, use fallback data
-            if (!window.api || !window.api.user) {
-                console.log('API not available, using fallback data');
-                this.loadFallbackData();
-            }
-            
+            document.getElementById('email').textContent = data.email;
+
         } catch (error) {
             console.error('Error loading user data:', error);
-            // Use fallback data in case of error
-            this.loadFallbackData();
+            // Fallback to localStorage data if API fails
+            const fallbackData = JSON.parse(localStorage.getItem('user'));
+            if (fallbackData) {
+                document.getElementById('full-name').textContent = fallbackData.username;
+                document.getElementById('email').textContent = fallbackData.email;
+            }
         }
-    },
-    
-    // Load fallback data
-    loadFallbackData() {
-        // Set default profile stats
-        document.querySelector('.stat:nth-child(1) .stat-value').textContent = '0';
-        document.querySelector('.stat:nth-child(2) .stat-value').textContent = '0';
-        document.querySelector('.stat:nth-child(3) .stat-value').textContent = '0';
-        
-        // Set default activity
-        const activityList = document.querySelector('.activity-list');
-        if (activityList) {
-            activityList.innerHTML = '<p class="text-muted">No recent activity</p>';
-        }
-    },
-    
-    // Update profile statistics
-    updateProfileStats(userData) {
-        const reviewCount = userData.reviewCount || 0;
-        const followingCount = userData.followingCount || 0;
-        const followerCount = userData.followerCount || 0;
-        
-        document.querySelector('.stat:nth-child(1) .stat-value').textContent = reviewCount;
-        document.querySelector('.stat:nth-child(2) .stat-value').textContent = followingCount;
-        document.querySelector('.stat:nth-child(3) .stat-value').textContent = followerCount;
     },
     
     // Load user reviews
     async loadUserReviews() {
         try {
-            // Check if API is available
-            if (!window.api || !window.api.review) {
-                console.warn('Review API not available, using fallback data');
-                this.loadFallbackData();
-                return;
-            }
-            
-            // Get user ID from localStorage
+            console.log('Loading user reviews...');
             const userData = JSON.parse(localStorage.getItem('user'));
             if (!userData || !userData.id) {
-                console.error('User ID not found');
-                this.loadFallbackData();
+                console.error('No user data found');
                 return;
             }
-            
-            // Fetch all reviews and filter by user ID
-            const response = await window.api.review.getAll();
-            console.log('All reviews:', response);
-            
-            // Filter reviews by user ID
-            const userReviews = response.reviews ? 
-                response.reviews.filter(review => review.userId === userData.id) : 
-                [];
-            
-            // Update review count
-            const reviewCountElement = document.querySelector('.stat:nth-child(1) .stat-value');
-            if (reviewCountElement) {
-                reviewCountElement.textContent = userReviews.length;
-            }
-            
-            // Update reviews list if available
-            const reviewsList = document.querySelector('.reviews-list');
-            if (reviewsList) {
-                if (userReviews.length === 0) {
-                    reviewsList.innerHTML = '<p class="text-muted">No reviews yet</p>';
-                } else {
-                    reviewsList.innerHTML = userReviews.map(review => `
-                        <div class="review-item">
-                            <h4>${review.foodName || 'Unknown Food'}</h4>
-                            <p>${review.comment || 'No comment'}</p>
-                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
-                        </div>
-                    `).join('');
+
+            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}/reviews`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user reviews');
             }
-            
+
+            const reviews = await response.json();
+            console.log('User reviews loaded:', reviews);
+
+            // Update review count
+            document.querySelector('.stat:nth-child(1) .stat-value').textContent = reviews.length;
+
+            // Update recent activity
+            const activityList = document.querySelector('.activity-list');
+            if (reviews.length > 0) {
+                activityList.innerHTML = reviews.slice(0, 5).map(review => `
+                    <div class="activity-item">
+                        <i class="fas fa-utensils"></i>
+                        <div class="activity-content">
+                            <p>Reviewed ${review.food_name}</p>
+                            <small class="text-muted">${new Date(review.created_at).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                activityList.innerHTML = '<p class="text-muted">No recent activity</p>';
+            }
+
         } catch (error) {
             console.error('Error loading user reviews:', error);
-            this.loadFallbackData();
+            document.querySelector('.activity-list').innerHTML = '<p class="text-muted">Error loading activity</p>';
         }
     },
     
-    // Load user activity
-    async loadUserActivity() {
+    // Update profile statistics
+    updateProfileStats(userData) {
         try {
-            // Check if API is available
-            if (!window.api || !window.api.review) {
-                console.warn('Review API not available, using fallback data');
-                this.loadFallbackData();
-                return;
-            }
-            
-            // Get user ID from localStorage
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData || !userData.id) {
-                console.error('User ID not found');
-                this.loadFallbackData();
-                return;
-            }
-            
-            // Fetch all reviews and filter by user ID
-            const response = await window.api.review.getAll();
-            console.log('All reviews:', response);
-            
-            // Filter reviews by user ID and sort by date
-            const userReviews = response.reviews ? 
-                response.reviews
-                    .filter(review => review.userId === userData.id)
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : 
-                [];
-            
-            // Update activity list
-            const activityList = document.querySelector('.activity-list');
-            if (activityList) {
-                if (userReviews.length === 0) {
-                    activityList.innerHTML = '<p class="text-muted">No recent activity</p>';
-                } else {
-                    activityList.innerHTML = userReviews.map(review => `
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Reviewed ${review.foodName || 'a food item'}</p>
-                                <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            }
-            
+            // Update review count
+            const reviewCount = userData.reviews ? userData.reviews.length : 0;
+            document.querySelector('.stat:nth-child(1) .stat-value').textContent = reviewCount;
         } catch (error) {
-            console.error('Error loading user activity:', error);
-            this.loadFallbackData();
-        }
-    },
-    
-    // Render activity list
-    renderActivityList(activities) {
-        const activityList = document.querySelector('.activity-list');
-        if (!activityList) return;
-        
-        if (!activities || !Array.isArray(activities) || activities.length === 0) {
-            activityList.innerHTML = '<p class="text-muted">No recent activity</p>';
-            return;
-        }
-        
-        activityList.innerHTML = activities.map(activity => {
-            const date = new Date(activity.date).toLocaleDateString();
-            return `
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas ${this.getActivityIcon(activity.type)}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>${activity.description}</p>
-                        <small class="text-muted">${date}</small>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    },
-    
-    // Get activity icon based on activity type
-    getActivityIcon(type) {
-        switch (type) {
-            case 'review':
-                return 'fa-star';
-            case 'favorite':
-                return 'fa-heart';
-            case 'follow':
-                return 'fa-user-plus';
-            default:
-                return 'fa-info-circle';
+            console.error('Error updating profile stats:', error);
+            // Set default value in case of error
+            document.querySelector('.stat:nth-child(1) .stat-value').textContent = '0';
         }
     },
     
     // Save profile changes
     async saveProfileChanges(formData) {
         try {
-            // Check if API is available
-            if (!window.api || !window.api.user) {
-                console.error('User API not available');
-                return false;
-            }
-            
-            // Get user ID from localStorage
             const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData || !userData._id) {
-                console.error('User ID not found');
-                return false;
+            if (!userData || !userData.id) {
+                throw new Error('No user data found');
             }
-            
-            // Update user profile
-            const response = await window.api.user.updateProfile(userData._id, formData);
-            console.log('Profile update response:', response);
-            
-            // Update localStorage with new user data
-            if (response && response.user) {
-                localStorage.setItem('user', JSON.stringify(response.user));
-                this.loadUserData();
-                return true;
+
+            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update profile');
             }
-            
-            return false;
+
+            // Reload user data after successful update
+            await this.loadUserData();
         } catch (error) {
             console.error('Error saving profile changes:', error);
-            return false;
+            alert('Failed to save profile changes. Please try again.');
         }
     },
     
