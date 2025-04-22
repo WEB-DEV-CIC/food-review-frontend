@@ -70,14 +70,14 @@ window.foods = {
                 return;
             }
             
-            const response = await window.api.food.getAll(sortParam ? { sort: sortParam } : {});
-            console.log('API response:', response);
+            const foods = await window.api.food.getAll(sortParam ? { sort: sortParam } : {});
+            console.log('API response:', foods);
             
-            if (response && response.foods) {
-                console.log(`Rendering ${response.foods.length} food items`);
-                this.renderFoods(response.foods);
+            if (foods && Array.isArray(foods)) {
+                console.log(`Rendering ${foods.length} food items`);
+                this.renderFoods(foods);
             } else {
-                console.error('Invalid response format:', response);
+                console.error('Invalid response format:', foods);
                 this.showError('Invalid response from server');
             }
         } catch (error) {
@@ -98,18 +98,18 @@ window.foods = {
 
         this.foodGrid.innerHTML = foods.map(food => {
             // Ensure food object exists and has required properties
-            if (!food || !food._id) {
+            if (!food || !food.id) {
                 console.warn('Invalid food item:', food);
                 return '';
             }
             
             // Safely access properties with defaults
             const name = food.name || 'Unnamed Food';
-            const imageUrl = food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-            const rating = typeof food.rating === 'number' ? food.rating : 0;
-            const cuisine = food.cuisine || 'Cuisine not specified';
-            const tasteProfile = Array.isArray(food.tasteProfile) ? food.tasteProfile : [];
-            const dietaryRestrictions = Array.isArray(food.dietaryRestrictions) ? food.dietaryRestrictions : [];
+            const imageUrl = food.image_url || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+            const rating = parseFloat(food.average_rating) || 0;
+            const cuisine = food.region_name || 'Cuisine not specified';
+            const tasteProfile = Array.isArray(food.taste_profiles) ? food.taste_profiles : [];
+            const ingredients = Array.isArray(food.ingredients) ? food.ingredients : [];
 
             return `
                 <div class="food-card" data-rating="${rating}" data-cuisine="${cuisine}">
@@ -123,12 +123,12 @@ window.foods = {
                                 ${tasteProfile.map(taste => `<span class="taste-tag">${taste}</span>`).join('')}
                             </div>
                         ` : ''}
-                        ${dietaryRestrictions.length > 0 ? `
-                            <div class="dietary-restrictions">
-                                ${dietaryRestrictions.map(diet => `<span class="diet-tag">${diet}</span>`).join('')}
+                        ${ingredients.length > 0 ? `
+                            <div class="ingredients">
+                                ${ingredients.map(ingredient => `<span class="ingredient-tag">${ingredient}</span>`).join('')}
                             </div>
                         ` : ''}
-                        <a href="food-details.html?id=${food._id}" class="button">View Details</a>
+                        <a href="food-details.html?id=${food.id}" class="button">View Details</a>
                     </div>
                 </div>
             `;

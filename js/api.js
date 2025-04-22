@@ -8,43 +8,54 @@ const api = {
         const token = localStorage.getItem('token');
         return {
             'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : ''
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Accept': 'application/json'
         };
+    },
+
+    handleResponse: async (response) => {
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+        return response.json();
     },
 
     // Admin endpoints
     admin: {
-        async getStats() {
-            const response = await fetch(`${api.baseUrl}/admin/stats`, {
-                headers: api.getHeaders()
-            });
-            if (!response.ok) throw new Error('Failed to fetch stats');
-            return response.json();
-        },
-
-        async getFoods() {
+        getStats: async () => {
             try {
-                console.log('Making request to:', `${api.baseUrl}/admin/foods`);
-                const response = await fetch(`${api.baseUrl}/admin/foods`, {
+                const response = await fetch(`${api.baseUrl}/admin/stats`, {
                     headers: api.getHeaders()
                 });
-                
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Error response:', errorText);
-                    throw new Error(`Failed to fetch foods: ${response.status} ${errorText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Parsed response data:', data);
-                return data;
+                return await api.handleResponse(response);
             } catch (error) {
-                console.error('Error in getFoods:', error);
+                console.error('Error fetching admin stats:', error);
                 throw error;
             }
         },
-
+        getFoods: async () => {
+            try {
+                const response = await fetch(`${api.baseUrl}/admin/foods`, {
+                    headers: api.getHeaders()
+                });
+                return await api.handleResponse(response);
+            } catch (error) {
+                console.error('Error fetching admin foods:', error);
+                throw error;
+            }
+        },
+        getUsers: async () => {
+            try {
+                const response = await fetch(`${api.baseUrl}/admin/users`, {
+                    headers: api.getHeaders()
+                });
+                return await api.handleResponse(response);
+            } catch (error) {
+                console.error('Error fetching admin users:', error);
+                throw error;
+            }
+        },
         async updateFood(id, foodData) {
             try {
                 console.log('Updating food with ID:', id);
@@ -162,15 +173,18 @@ const api = {
         async addReview(foodId, rating, comment) {
             try {
                 console.log('Submitting review for food:', foodId);
+                console.log('Review data:', { rating, comment });
                 const response = await fetch(`${api.baseUrl}/foods/${foodId}/reviews`, {
                     method: 'POST',
                     headers: api.getHeaders(),
                     body: JSON.stringify({ rating, comment })
                 });
                 
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Failed to submit review');
+                    const errorData = await response.json();
+                    console.error('Error response:', errorData);
+                    throw new Error(errorData.error || 'Failed to submit review');
                 }
                 
                 const data = await response.json();

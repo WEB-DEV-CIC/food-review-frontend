@@ -47,32 +47,43 @@ const Admin = (function() {
 
         async init() {
             try {
-                console.log('Initializing admin panel...');
-                
-                // Check admin access and token
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                // Check authentication
                 const token = localStorage.getItem('token');
-                
-                if (user.role !== 'admin' || !token) {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+                if (!token || !user) {
+                    console.log('No token or user found, redirecting to login');
                     window.location.href = '/login.html';
                     return;
                 }
-                
+
+                if (user.role !== 'admin') {
+                    console.log('User is not an admin, redirecting to home');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
                 // Initialize event listeners
                 this.initializeEventListeners();
-                
+
                 // Load initial data
                 await this.loadDashboardData();
                 await this.loadFoods();
-                
+
                 // Show initial section based on hash
                 const currentHash = window.location.hash.substring(1) || 'dashboard';
                 this.switchSection(currentHash);
-                
-                console.log('Admin panel initialized successfully');
+
             } catch (error) {
                 console.error('Error initializing admin panel:', error);
-                this.showError('Failed to initialize admin panel');
+                if (error.status === 401) {
+                    // Clear invalid auth data
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login.html';
+                } else {
+                    this.showError('Failed to initialize admin panel');
+                }
             }
         }
 
@@ -99,38 +110,51 @@ const Admin = (function() {
             if (editFoodForm) {
                 editFoodForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    try {
-                        const foodId = document.getElementById('editFoodId').value;
-                        const formData = {
-                            name: document.getElementById('editName').value,
-                            cuisine: document.getElementById('editCuisine').value,
-                            description: document.getElementById('editDescription').value,
-                            price: parseFloat(document.getElementById('editPrice').value),
-                            image: document.getElementById('editImage').value
-                        };
+                    const foodId = document.getElementById('editFoodId').value;
+                    if (!foodId) {
+                        this.showError('Food ID is required');
+                        return;
+                    }
 
-                        const result = await window.api.admin.updateFood(foodId, formData);
-                        if (result.success) {
-                            // Update the food in the state
-                            this.state.data.foods = this.state.data.foods.map(f => 
-                                f._id === foodId ? { ...f, ...formData } : f
-                            );
-                            
-                            // Update the UI
-                            this.renderFoods();
-                            
-                            // Hide the modal
-                            const editModal = bootstrap.Modal.getInstance(document.getElementById('editFoodModal'));
-                            editModal.hide();
-                            
-                            // Show success message
-                            this.showSuccess('Food updated successfully');
-                        } else {
-                            throw new Error(result.message);
+                    const formData = {
+                        name: document.getElementById('editName').value,
+                        region_name: document.getElementById('editCuisine').value,
+                        description: document.getElementById('editDescription').value,
+                        price: parseFloat(document.getElementById('editPrice').value),
+                        image_url: document.getElementById('editImage').value
+                    };
+
+                    try {
+                        console.log('Updating food:', foodId, formData);
+                        const response = await fetch(`${window.api.baseUrl}/admin/foods/${foodId}`, {
+                            method: 'PUT',
+                            headers: window.api.getHeaders(),
+                            body: JSON.stringify(formData)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || 'Failed to update food');
                         }
+
+                        const data = await response.json();
+                        console.log('Food updated successfully:', data);
+
+                        // Update food in state
+                        const index = this.state.data.foods.findIndex(f => f.id === parseInt(foodId));
+                        if (index !== -1) {
+                            this.state.data.foods[index] = { ...this.state.data.foods[index], ...formData };
+                            this.renderFoods();
+                        }
+
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('editFoodModal'));
+                        modal.hide();
+                        this.showSuccess('Food updated successfully');
+
                     } catch (error) {
                         console.error('Error updating food:', error);
-                        this.showError('Failed to update food');
+                        this.showError(error.message || 'Failed to update food');
                     }
                 });
             }
@@ -178,19 +202,40 @@ const Admin = (function() {
                 });
             }
 
-            // Edit and Delete buttons (using event delegation)
+            // Handle edit and delete buttons (using event delegation)
             document.addEventListener('click', (e) => {
-                const target = e.target;
-                if (target.classList.contains('edit-food-btn')) {
-                    const foodId = target.dataset.foodId;
+                console.log('Click event target:', e.target);
+                console.log('Click event target classList:', e.target.classList);
+                
+                const editBtn = e.target.closest('.edit-food');
+                const deleteBtn = e.target.closest('.delete-food');
+                
+                console.log('Edit button found:', editBtn);
+                console.log('Delete button found:', deleteBtn);
+                
+                if (editBtn) {
+                    const foodId = editBtn.getAttribute('data-id');
+                    console.log('Edit button clicked, foodId:', foodId);
                     if (foodId) {
                         this.handleEditFood(foodId);
+                    } else {
+                        console.error('No food ID found on edit button');
+                        this.showError('No food ID found on edit button');
                     }
-                } else if (target.classList.contains('delete-food-btn')) {
-                    const foodId = target.dataset.foodId;
+                } else if (deleteBtn) {
+                    const foodId = deleteBtn.getAttribute('data-id');
                     if (foodId) {
                         this.handleDeleteFood(foodId);
+                    } else {
+                        this.showError('No food ID found on delete button');
                     }
+                }
+            });
+            
+            // Handle individual food checkboxes
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('food-checkbox')) {
+                    this.handleSelectFood(e.target.value);
                 }
             });
             
@@ -238,39 +283,41 @@ const Admin = (function() {
                 console.log('Loading dashboard data...');
                 this.state.loading.dashboard = true;
                 
-                const data = await window.api.admin.getStats();
-                console.log('Dashboard stats:', data);
+                const stats = await window.api.admin.getStats();
+                console.log('Dashboard stats loaded:', stats);
                 
-                this.state.data.dashboard = data.stats;
+                this.state.data.dashboard = stats;
                 this.updateDashboardStats();
                 
+                this.state.loading.dashboard = false;
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-                this.showError('Failed to load dashboard statistics');
-            } finally {
                 this.state.loading.dashboard = false;
+                this.showError('Failed to load dashboard statistics');
             }
         }
         
         updateDashboardStats() {
-            console.log('Updating dashboard stats...');
             const stats = this.state.data.dashboard;
-            
-            const totalFoodsElement = document.getElementById('totalFoods');
-            const totalReviewsElement = document.getElementById('totalReviews');
-            
-            if (totalFoodsElement) {
-                totalFoodsElement.textContent = stats.totalFoods ?? '0';
-                console.log('Updated totalFoods:', stats.totalFoods);
-            } else {
-                console.warn('#totalFoods element not found');
-            }
-            
-            if (totalReviewsElement) {
-                totalReviewsElement.textContent = stats.totalReviews ?? '0';
-                console.log('Updated totalReviews:', stats.totalReviews);
-            } else {
-                console.warn('#totalReviews element not found');
+            if (!stats) return;
+
+            // Update total counts
+            document.getElementById('totalFoods').textContent = stats.totalFoods;
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('totalReviews').textContent = stats.totalReviews;
+            document.getElementById('averageRating').textContent = stats.averageRating.toFixed(1);
+
+            // Update recent activity
+            const activityList = document.getElementById('recentActivity');
+            if (activityList) {
+                activityList.innerHTML = stats.recentActivity.map(activity => `
+                    <div class="activity-item">
+                        <span class="activity-type">${activity.type}</span>
+                        <span class="activity-item">${activity.item}</span>
+                        <span class="activity-user">${activity.user}</span>
+                        <span class="activity-date">${new Date(activity.date).toLocaleDateString()}</span>
+                    </div>
+                `).join('');
             }
         }
         
@@ -278,34 +325,18 @@ const Admin = (function() {
             try {
                 console.log('Starting to load foods...');
                 this.state.loading.foods = true;
-                this.renderFoods(); // Show loading state immediately
                 
-                console.log('Making API call to get foods...');
                 const foods = await window.api.admin.getFoods();
-                console.log('API Response:', foods);
+                console.log('Foods loaded:', foods);
                 
-                if (!Array.isArray(foods)) {
-                    console.error('Invalid response format:', foods);
-                    throw new Error('Invalid response format from server');
-                }
-                
-                console.log(`Received ${foods.length} foods`);
                 this.state.data.foods = foods;
+                this.renderFoods();
                 
-                console.log('Rendering foods...');
-                this.renderFoods(); // Render actual data
-                
-                console.log('Initializing food filter...');
-                this.initializeFoodFilter();
-                
+                this.state.loading.foods = false;
             } catch (error) {
                 console.error('Error loading foods:', error);
-                this.showError('Failed to load foods: ' + error.message);
-                this.state.data.foods = [];
-                this.renderFoods(); // Render empty state
-            } finally {
                 this.state.loading.foods = false;
-                console.log('Food loading process completed');
+                this.showError('Failed to load foods');
             }
         }
         
@@ -316,7 +347,7 @@ const Admin = (function() {
                     const searchTerm = e.target.value.toLowerCase();
                     const filteredFoods = this.state.data.foods.filter(food => 
                         food.name.toLowerCase().includes(searchTerm) ||
-                        food.cuisine.toLowerCase().includes(searchTerm) ||
+                        food.region_name.toLowerCase().includes(searchTerm) ||
                         food.description.toLowerCase().includes(searchTerm)
                     );
                     this.renderFoods(filteredFoods);
@@ -326,33 +357,51 @@ const Admin = (function() {
         
         renderFoods(foods = null) {
             const foodsToRender = foods || this.state.data.foods;
-            const tbody = document.getElementById('foodsTableBody');
-            if (!tbody) return;
+            const tableBody = document.querySelector('#foodsTable tbody');
+            if (!tableBody) {
+                console.error('Foods table body not found');
+                return;
+            }
 
-            tbody.innerHTML = foodsToRender.length === 0 ? `
-                <tr>
-                    <td colspan="5" class="text-center">No foods found</td>
-                </tr>
-            ` : foodsToRender.map(food => `
-                <tr>
-                    <td>${food.name}</td>
-                    <td>${food.cuisine}</td>
-                    <td>$${food.price.toFixed(2)}</td>
-                    <td>${food.rating ? food.rating.toFixed(1) : 'N/A'}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary edit-food-btn" data-food-id="${food._id}">
+            console.log('Rendering foods:', foodsToRender);
+
+            tableBody.innerHTML = foodsToRender.map(food => {
+                const averageRating = food.average_rating ? parseFloat(food.average_rating).toFixed(1) : 'N/A';
+                const price = food.price ? parseFloat(food.price).toFixed(2) : 'N/A';
+                
+                console.log('Rendering food:', food);
+                
+                return `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="food-checkbox" value="${food.id}">
+                        </td>
+                        <td>${food.name}</td>
+                        <td>${food.region_name}</td>
+                        <td>$${price}</td>
+                        <td>${averageRating}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-food" data-id="${food.id}">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-sm btn-danger delete-food-btn" data-food-id="${food._id}">
+                            <button class="btn btn-sm btn-danger delete-food" data-id="${food.id}">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+                        </td>
+                    </tr>
+                `;
+            }).join('');
 
             this.updateDeleteSelectedButton();
+        }
+
+        updateDeleteSelectedButton() {
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            if (!deleteSelectedBtn) return;
+
+            const selectedCount = document.querySelectorAll('.food-checkbox:checked').length;
+            deleteSelectedBtn.disabled = selectedCount === 0;
+            deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
         }
         
         showError(message) {
@@ -396,12 +445,6 @@ const Admin = (function() {
                 const foodPrice = document.querySelector('#foodPrice');
                 const foodImage = document.querySelector('#foodImage');
 
-                console.log('foodName:', foodName);
-                console.log('foodCuisine:', foodCuisine);
-                console.log('foodDescription:', foodDescription);
-                console.log('foodPrice:', foodPrice);
-                console.log('foodImage:', foodImage);
-
                 // Ensure all elements exist
                 if (!foodName || !foodCuisine || !foodDescription || !foodPrice || !foodImage) {
                     console.error('One or more form elements are missing');
@@ -416,8 +459,6 @@ const Admin = (function() {
                 const price = parseFloat(foodPrice.value);
                 const image = foodImage.value;
 
-                console.log('Form values:', { name, cuisine, description, price, image });
-
                 // Validate required fields
                 if (!name || !cuisine || !description || !price || !image) {
                     this.showError('Please fill in all required fields');
@@ -430,74 +471,60 @@ const Admin = (function() {
                     return;
                 }
 
-                console.log('Submitting food data to API...');
-
                 // Make API call to create food
-                const response = await fetch('http://localhost:5000/api/v1/admin/foods', {
+                const response = await fetch(`${window.api.baseUrl}/admin/foods`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include admin token
-                    },
-                    body: JSON.stringify({ name, cuisine, description, price, image }),
+                    headers: window.api.getHeaders(),
+                    body: JSON.stringify({
+                        name,
+                        cuisine,
+                        description,
+                        price,
+                        image
+                    })
                 });
 
-                const result = await response.json();
-
-                if (response.ok) {
-                    console.log('Food added successfully:', result);
-
-                    // Clear form
-                    document.getElementById('addFoodForm').reset();
-
-                    // Hide the modal using Bootstrap's modal method
-                    const modalElement = document.getElementById('addFoodModal');
-                    if (modalElement) {
-                        // Remove the 'show' class and set display to none
-                        modalElement.classList.remove('show');
-                        modalElement.style.display = 'none';
-                        // Remove the modal backdrop
-                        const backdrop = document.querySelector('.modal-backdrop');
-                        if (backdrop) {
-                            backdrop.remove();
-                        }
-                        // Remove the modal-open class from body
-                        document.body.classList.remove('modal-open');
-                        document.body.style.overflow = '';
-                        document.body.style.paddingRight = '';
-                    }
-
-                    // Show success message
-                    this.showSuccess('Food added successfully');
-
-                    // Reload foods
-                    await this.loadFoods();
-
-                    // Switch to foods section
-                    this.switchSection('foods');
-                } else {
-                    console.error('API Error:', result.error);
-                    throw new Error(result.error || 'Failed to add food');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to add food');
                 }
+
+                const data = await response.json();
+                console.log('Food added successfully:', data);
+
+                // Close modal and refresh food list
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+                await this.loadFoods();
+
             } catch (error) {
-                console.error('Failed to add food:', error);
+                console.error('Error adding food:', error);
                 this.showError(error.message || 'Failed to add food');
             }
         }
 
         async handleEditFood(foodId) {
             try {
-                console.log('Editing food with ID:', foodId);
-                console.log('Current foods:', this.state.data.foods);
+                console.log('handleEditFood called with foodId:', foodId);
+                console.log('Current foods in state:', this.state.data.foods);
                 
-                // Find the food item
-                const food = this.state.data.foods.find(f => f._id === foodId);
+                if (!foodId) {
+                    console.error('No food ID provided');
+                    this.showError('No food ID provided');
+                    return;
+                }
+
+                // Get food data
+                const food = this.state.data.foods.find(f => f.id === parseInt(foodId));
+                console.log('Found food:', food);
+                
                 if (!food) {
+                    console.error('Food not found for ID:', foodId);
                     this.showError('Food not found');
                     return;
                 }
 
-                // Get form elements
+                // Populate edit form
                 const editFoodId = document.getElementById('editFoodId');
                 const editName = document.getElementById('editName');
                 const editCuisine = document.getElementById('editCuisine');
@@ -505,146 +532,87 @@ const Admin = (function() {
                 const editPrice = document.getElementById('editPrice');
                 const editImage = document.getElementById('editImage');
 
-                // Check if all form elements exist
                 if (!editFoodId || !editName || !editCuisine || !editDescription || !editPrice || !editImage) {
-                    console.error('Missing form elements:', {
-                        editFoodId: !!editFoodId,
-                        editName: !!editName,
-                        editCuisine: !!editCuisine,
-                        editDescription: !!editDescription,
-                        editPrice: !!editPrice,
-                        editImage: !!editImage
-                    });
-                    this.showError('Form elements not found');
+                    console.error('One or more edit form elements not found');
+                    this.showError('Edit form elements not found');
                     return;
                 }
 
-                // Populate form with food data
-                editFoodId.value = food._id;
+                editFoodId.value = food.id;
                 editName.value = food.name;
-                editCuisine.value = food.cuisine;
+                editCuisine.value = food.region_name;
                 editDescription.value = food.description;
                 editPrice.value = food.price;
-                editImage.value = food.image || '';
+                editImage.value = food.image_url;
 
                 // Show edit modal
                 const editModal = new bootstrap.Modal(document.getElementById('editFoodModal'));
                 editModal.show();
+
             } catch (error) {
-                console.error('Error in handleEditFood:', error);
-                this.showError('Error loading food details');
+                console.error('Error preparing edit food:', error);
+                this.showError('Failed to prepare food edit');
             }
         }
 
         async handleDeleteFood(foodId) {
             try {
-                console.log('Deleting food with ID:', foodId);
-                
-                // Confirm deletion
-                if (!confirm('Are you sure you want to delete this food item?')) {
+                if (!foodId) {
+                    this.showError('Food ID is required');
                     return;
                 }
-                
-                // Call the API to delete the food
-                const result = await window.api.admin.deleteFood(foodId);
-                
-                if (result.success) {
-                    // Remove the food from the state
-                    this.state.data.foods = this.state.data.foods.filter(f => f._id !== foodId);
-                    
-                    // Update the UI
-                    this.renderFoods();
-                    
-                    // Show success message
-                    this.showSuccess('Food deleted successfully');
-                } else {
-                    throw new Error(result.message);
+
+                if (!confirm('Are you sure you want to delete this food?')) {
+                    return;
                 }
+
+                const response = await fetch(`${window.api.baseUrl}/admin/foods/${foodId}`, {
+                    method: 'DELETE',
+                    headers: window.api.getHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to delete food');
+                }
+
+                // Remove food from state and update UI
+                this.state.data.foods = this.state.data.foods.filter(f => f.id !== parseInt(foodId));
+                this.renderFoods();
+                this.showSuccess('Food deleted successfully');
+
             } catch (error) {
                 console.error('Error deleting food:', error);
-                this.showError('Failed to delete food');
+                this.showError(error.message || 'Failed to delete food');
             }
         }
 
         showSuccess(message) {
-            const toast = document.getElementById('successToast');
-            if (toast) {
-                const toastBody = toast.querySelector('.toast-body');
-                if (toastBody) {
-                    toastBody.textContent = message;
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                const successMessage = document.getElementById('successMessage');
+                if (successMessage) {
+                    successMessage.textContent = message;
                 }
-                const bsToast = new bootstrap.Toast(toast);
-                bsToast.show();
+                const modal = new bootstrap.Modal(successModal);
+                modal.show();
             } else {
                 alert(message);
             }
         }
 
         handleSelectAll(checked) {
-            const checkboxes = document.querySelectorAll('.food-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = checked;
-                const foodId = checkbox.dataset.foodId;
-                if (checked) {
-                    this.state.selectedFoods.add(foodId);
-                } else {
-                    this.state.selectedFoods.delete(foodId);
-                }
-            });
-            this.updateDeleteSelectedButton();
+            // Implementation for selecting all foods
         }
 
-        handleSelectFood(foodId, checked) {
-            if (checked) {
-                this.state.selectedFoods.add(foodId);
-            } else {
-                this.state.selectedFoods.delete(foodId);
-            }
-            this.updateDeleteSelectedButton();
+        handleSelectFood(foodId) {
+            // Implementation for selecting a single food
         }
 
-        updateDeleteSelectedButton() {
-            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            if (deleteSelectedBtn) {
-                deleteSelectedBtn.style.display = this.state.selectedFoods.size > 0 ? 'inline-block' : 'none';
-            }
-        }
-
-        async handleDeleteSelected() {
-            if (this.state.selectedFoods.size === 0) return;
-
-            if (!confirm(`Are you sure you want to delete ${this.state.selectedFoods.size} selected food(s)?`)) {
-                return;
-            }
-
-            try {
-                const deletePromises = Array.from(this.state.selectedFoods).map(foodId => 
-                    window.api.admin.deleteFood(foodId)
-                );
-
-                await Promise.all(deletePromises);
-                
-                // Clear selected foods
-                this.state.selectedFoods.clear();
-                
-                // Update UI
-                this.updateDeleteSelectedButton();
-                document.getElementById('selectAllCheckbox').checked = false;
-                
-                // Reload foods
-                await this.loadFoods();
-                
-                this.showSuccess(`${this.state.selectedFoods.size} food(s) deleted successfully`);
-            } catch (error) {
-                console.error('Error deleting selected foods:', error);
-                this.showError('Failed to delete selected foods');
-            }
+        handleDeleteSelected() {
+            // Implementation for deleting selected foods
         }
     }
 
-    // Return the AdminClass constructor
     return AdminClass;
 })();
-
-// Expose Admin to window
-window.Admin = Admin;

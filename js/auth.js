@@ -132,24 +132,27 @@ const auth = {
     },
 
     // Handle registration
-    handleRegister(event) {
+    async handleRegister(event) {
         event.preventDefault();
+        console.log('Registration started');
         
         // Reset error messages
         document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
         document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
         
-        const name = document.getElementById('name').value.trim();
+        const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
+        console.log('Form values:', { username, email, password, confirmPassword });
+        
         let isValid = true;
         
-        // Validate name
-        if (name.length < 2) {
-            document.getElementById('nameError').textContent = 'Name must be at least 2 characters long';
-            document.getElementById('name').classList.add('error');
+        // Validate username
+        if (username.length < 2) {
+            document.getElementById('usernameError').textContent = 'Username must be at least 2 characters long';
+            document.getElementById('username').classList.add('error');
             isValid = false;
         }
         
@@ -176,10 +179,7 @@ const auth = {
         }
         
         if (!isValid) {
-            document.querySelector('.auth-container').classList.add('shake');
-            setTimeout(() => {
-                document.querySelector('.auth-container').classList.remove('shake');
-            }, 500);
+            console.log('Form validation failed');
             return;
         }
 
@@ -188,38 +188,36 @@ const auth = {
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
         
-        // Store reference to this
-        const self = this;
-        
-        // Send registration request
-        fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include', // Include cookies
-            body: JSON.stringify({
-                name,
-                email,
-                password
-            })
-        })
-        .then(response => {
+        try {
+            console.log('Sending registration request to:', `${API_BASE_URL}/auth/register`);
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                })
+            });
+
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+
             if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Registration failed');
-                });
+                throw new Error(data.message || 'Registration failed');
             }
-            return response.json();
-        })
-        .then(data => {
+
             // Store user data
             localStorage.setItem('user', JSON.stringify(data.user));
             
             // Redirect to appropriate page
-            window.location.href = self.getRedirectUrl();
-        })
-        .catch(error => {
+            window.location.href = this.getRedirectUrl();
+        } catch (error) {
+            console.error('Registration error:', error);
             // Show error message
             const errorMessage = error.message || 'Registration failed. Please try again.';
             document.getElementById('emailError').textContent = errorMessage;
@@ -228,7 +226,7 @@ const auth = {
             // Reset button
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-user-plus"></i> Register';
-        });
+        }
     },
 
     // Handle login
