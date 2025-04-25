@@ -4,7 +4,7 @@ console.log('API Test Script loaded');
 async function testApiConnection() {
     console.log('Testing API connection...');
     try {
-        const response = await fetch('http://localhost:5000/api/v1/foods?limit=1');
+        const response = await fetch('http://localhost:3002/api/v1/foods?limit=1');
         console.log('API Response status:', response.status);
         
         if (response.ok) {
@@ -26,4 +26,4 @@ async function testApiConnection() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, running API test');
     testApiConnection();
-}); 
+});

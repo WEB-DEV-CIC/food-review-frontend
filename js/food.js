@@ -154,27 +154,38 @@ const food = {
         const token = localStorage.getItem('token');
         if (!token) {
             this.reviewForm.innerHTML = `
-                <p>Please <a href="#" id="loginPrompt">login</a> to write a review.</p>
+                <p>Please <a href="login.html">login</a> to write a review.</p>
             `;
-            document.getElementById('loginPrompt').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('loginBtn').click();
-            });
             return;
         }
 
         this.reviewForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const rating = document.getElementById('reviewRating').value;
-            const comment = document.getElementById('reviewComment').value;
-
+            
             try {
-                await window.api.food.addReview(this.foodId, rating, comment);
-                await this.loadReviews(); // Reload reviews after submitting
+                const rating = document.getElementById('reviewRating').value;
+                const comment = document.getElementById('reviewComment').value;
+
+                const response = await fetch(`http://localhost:3002/api/v1/foods/${this.foodId}/reviews`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ rating, comment })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit review');
+                }
+
+                await this.loadReviews();
                 this.reviewForm.reset();
+                alert('Review submitted successfully!');
+
             } catch (error) {
                 console.error('Error submitting review:', error);
-                this.showError('Failed to submit review. Please try again.');
+                alert('Failed to submit review. Please try again.');
             }
         });
     },
@@ -249,4 +260,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Food detail container not found');
     }
-}); 
+});
