@@ -1,7 +1,7 @@
 // API module
 const api = {
     // Base URL
-    baseUrl: 'http://localhost:5000/api/v1',
+    baseUrl: API_BASE_URL,
 
     // Headers
     getHeaders(method = 'GET', endpoint = '') {

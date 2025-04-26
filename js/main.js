@@ -5,14 +5,11 @@ const main = {
     async init() {
         console.log('Initializing main functionality');
         try {
-            // Check if featuredFoods element exists
+            // Check if we're on a page that should display featured foods
+            this.featuredFoods = document.getElementById('featuredFoods');
             if (!this.featuredFoods) {
-                console.log('Featured foods container not found, retrying...');
-                this.featuredFoods = document.getElementById('featuredFoods');
-                if (!this.featuredFoods) {
-                    console.error('Featured foods container still not found after retry');
-                    return;
-                }
+                console.log('Featured foods container not found - this page might not need it');
+                return; // Exit quietly if this page doesn't need featured foods
             }
             
             // Check if API is available
@@ -62,7 +59,7 @@ const main = {
 
     renderFoods(foods) {
         if (!this.featuredFoods) {
-            console.error('Featured foods container not found');
+            console.log('Featured foods container not found - this page might not need it');
             return;
         }
         if (!foods || !Array.isArray(foods) || foods.length === 0) {
@@ -133,7 +130,6 @@ const main = {
         `;
     },
 
-    // Fallback food data in case API is not available
     getFallbackFoods() {
         return [
             {
@@ -168,16 +164,6 @@ const main = {
 };
 
 // Initialize the main page
-document.addEventListener('DOMContentLoaded', () => {
-    // Try to find the featuredFoods element
-    main.featuredFoods = document.getElementById('featuredFoods');
-    
-    // If we're on the index page, initialize main functionality
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
-        if (main.featuredFoods) {
-            main.init();
-        } else {
-            console.error('Featured foods container not found');
-        }
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    main.init();
 });

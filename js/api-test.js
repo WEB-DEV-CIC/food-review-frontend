@@ -1,29 +1,19 @@
 // API Test Script
 console.log('API Test Script loaded');
 
+// Define the test function
 async function testApiConnection() {
-    console.log('Testing API connection...');
     try {
-        const response = await fetch('http://localhost:5000/api/v1/foods?limit=1');
-        console.log('API Response status:', response.status);
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('API Response data:', data);
-            console.log('API connection successful!');
-            return true;
-        } else {
-            console.error('API connection failed with status:', response.status);
-            return false;
-        }
+        const response = await fetch(`${API_BASE_URL}/foods?limit=1`);
+        const data = await response.json();
+        console.log('API Test Result:', data);
     } catch (error) {
-        console.error('API connection error:', error);
-        return false;
+        console.error('API Test Error:', error);
     }
 }
 
-// Run the test when the script loads
-document.addEventListener('DOMContentLoaded', () => {
+// Run test when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, running API test');
     testApiConnection();
 }); 

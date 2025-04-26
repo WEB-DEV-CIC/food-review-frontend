@@ -20,7 +20,7 @@ const profile = {
                 return;
             }
 
-            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}`, {
+            const response = await fetch(`${API_BASE_URL}/users/${userData.id}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -61,7 +61,7 @@ const profile = {
                 return;
             }
 
-            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}/reviews`, {
+            const response = await fetch(`${API_BASE_URL}/users/${userData.id}/reviews`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -120,7 +120,7 @@ const profile = {
                 throw new Error('No user data found');
             }
 
-            const response = await fetch(`http://localhost:5000/api/v1/users/${userData.id}`, {
+            const response = await fetch(`${API_BASE_URL}/users/${userData.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
