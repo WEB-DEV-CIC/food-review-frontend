@@ -1,5 +1,7 @@
 // Global API configuration
-var API_BASE_URL = 'http://localhost:5000/api/v1';
+//var API_BASE_URL = 'http://localhost:5000/api/v1';
+var API_BASE_URL = 'https://food-review-backend.onrender.com/api/v1';
+
 
 // Using var for global scope accessibility in non-module scripts
 var CONFIG = {
