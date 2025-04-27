@@ -139,7 +139,6 @@
                 const food = response;
                 
                 if (food) {
-                    // 统一图片URL获取逻辑
                     const imageUrl = food.image_url || food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
                     
                     document.getElementById('foodDetails').innerHTML = `
@@ -153,8 +152,10 @@
                                 <div class="rating">${generateStarRating(food.rating)}</div>
                                 <p class="description">${food.description}</p>
                                 <div class="food-meta">
-                                    <span class="region"><i class="fas fa-map-marker-alt"></i> ${food.cuisine}</span>
-                                    <span class="price"><i class="fas fa-tag"></i> $${food.price}</span>
+                                    <span class="region">
+                                        <i class="fas fa-map-marker-alt"></i> 
+                                        ${food.region_name || 'Region not specified'}
+                                    </span>
                                 </div>
                                 ${food.tags ? `
                                     <div class="tags">
@@ -189,7 +190,6 @@
                         <p class="description">A tasty dish that will satisfy your cravings. This is a placeholder description while we're loading the actual food details.</p>
                         <div class="food-meta">
                             <span class="region"><i class="fas fa-map-marker-alt"></i> Various Cuisines</span>
-                            <span class="price"><i class="fas fa-tag"></i> $9.99</span>
                         </div>
                         <div class="tags">
                             <span class="tag">delicious</span>
