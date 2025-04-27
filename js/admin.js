@@ -228,7 +228,6 @@ const Admin = (function() {
                     const searchTerm = e.target.value.toLowerCase();
                     const filteredFoods = this.state.data.foods.filter(food => 
                         food.name.toLowerCase().includes(searchTerm) ||
-                        food.cuisine.toLowerCase().includes(searchTerm) ||
                         food.description.toLowerCase().includes(searchTerm)
                     );
                     this.renderFoods(filteredFoods);
@@ -243,7 +242,7 @@ const Admin = (function() {
 
             tbody.innerHTML = foodsToRender.length === 0 ? `
                 <tr>
-                    <td colspan="6" class="text-center py-4">
+                    <td colspan="5" class="text-center py-4">
                         <i class="fas fa-utensils fa-2x text-muted mb-3"></i>
                         <p class="text-muted">No foods found</p>
                     </td>
@@ -285,57 +284,62 @@ const Admin = (function() {
 
         async handleAddFood() {
             try {
+                // 获取所有必需的表单元素值
+                const nameInput = document.getElementById('foodName');
+                const descriptionInput = document.getElementById('foodDescription');
+                const imageInput = document.getElementById('foodImage');
+                const regionSelect = document.getElementById('foodRegion');
+                
+                // 验证所有表单元素是否存在
+                if (!nameInput || !descriptionInput || !imageInput || !regionSelect) {
+                    throw new Error('Required form elements not found');
+                }
+
                 // 获取表单值
-                const name = document.getElementById('foodName').value;
-                const region = document.getElementById('foodRegion').value;
-                const description = document.getElementById('foodDescription').value;
-                const image = document.getElementById('foodImage').value;
+                const name = nameInput.value.trim();
+                const description = descriptionInput.value.trim();
+                const image_url = imageInput.value.trim();
+                const region_id = parseInt(regionSelect.value);
 
                 // 验证必填字段
-                if (!name || !region || !description || !image) {
-                    this.showError('Please fill in all required fields');
-                    return;
+                if (!name || !description || !image_url) {
+                    throw new Error('Please fill in all required fields');
                 }
 
-                // 验证图片URL
-                if (!image.startsWith('http://') && !image.startsWith('https://')) {
-                    this.showError('Please enter a valid image URL');
-                    return;
+                if (!regionSelect.value) {
+                    throw new Error('Please select a region');
                 }
 
-                console.log('Submitting new food:', { name, region, description, image });
+                if (isNaN(region_id) || region_id < 1 || region_id > 5) {
+                    throw new Error('Invalid region selected');
+                }
 
-                // 使用正确的API调用创建食物
-                // 修改：使用 window.api.admin.addFood 而不是 window.api.food.create
-                const response = await window.api.admin.addFood({
+                // 构造发送数据
+                const foodData = {
                     name,
                     description,
-                    region_id: parseInt(region), // 确保region_id是数字
-                    image_url: image,
-                    ingredients: [],  // 添加空数组，因为后端需要这些字段
-                    taste_profiles: [] // 添加空数组，因为后端需要这些字段
-                });
+                    region_id,
+                    image_url,
+                    ingredients: [],    // 如果需要这些字段，可以添加相应的表单元素
+                    taste_profiles: [] 
+                };
 
-                console.log('API Response:', response);
+                console.log('Submitting food data:', foodData);
+                
+                const response = await window.api.admin.addFood(foodData);
 
-                if (response && response.success) {
-                    // 关闭模态框
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addFoodModal'));
-                    if (modal) {
-                        modal.hide();
-                    }
-                    
-                    // 清除表单
-                    document.getElementById('addFoodForm').reset();
-                    
-                    // 显示成功消息
-                    this.showSuccess('Food added successfully');
-                    
-                    // 重新加载数据 (修改为使用正确的方法名)
-                    await this.loadFoods();
-                } else {
+                if (!response || !response.success) {
                     throw new Error(response?.message || 'Failed to add food');
                 }
+
+                // 成功处理
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addFoodModal'));
+                modal?.hide();
+                document.getElementById('addFoodForm').reset();
+                
+                this.showSuccess('Food added successfully');
+                await this.loadFoods();
+
             } catch (error) {
                 console.error('Failed to add food:', error);
                 this.showError(error.message || 'Failed to add food');
@@ -357,8 +361,7 @@ const Admin = (function() {
                     document.getElementById('editFoodId').value = food._id;
                     document.getElementById('editFoodName').value = food.name;
                     document.getElementById('editFoodDescription').value = food.description;
-                    document.getElementById('editFoodPrice').value = food.price;
-                    document.getElementById('editFoodCuisine').value = food.cuisine;
+                    document.getElementById('editFoodRegion').value = food.region_id;
 
                     // Show modal
                     const modal = new bootstrap.Modal(editModal);
@@ -378,8 +381,7 @@ const Admin = (function() {
                                 const formData = {
                                     name: document.getElementById('editFoodName').value,
                                     description: document.getElementById('editFoodDescription').value,
-                                    price: parseFloat(document.getElementById('editFoodPrice').value),
-                                    cuisine: document.getElementById('editFoodCuisine').value,
+                                    region_id: parseInt(document.getElementById('editFoodRegion').value),
                                     image: food.image // Preserve the existing image
                                 };
 

@@ -739,7 +739,6 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
-                                    <th>Cuisine</th>
                                     <th>Rating</th>
                                     <th>Reviews</th>
                                     <th>Actions</th>
@@ -793,12 +792,8 @@
                 <div class="modal-body">
                     <form id="addFoodForm">
                         <div class="mb-3">
-                            <label for="foodName" class="form-label">Food Name</label>
+                            <label for="foodName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="foodName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="foodRegion" class="form-label">Region</label>
-                            <input type="text" class="form-control" id="foodRegion" required>
                         </div>
                         <div class="mb-3">
                             <label for="foodDescription" class="form-label">Description</label>
@@ -807,6 +802,17 @@
                         <div class="mb-3">
                             <label for="foodImage" class="form-label">Image URL</label>
                             <input type="url" class="form-control" id="foodImage" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="foodRegion" class="form-label">Region</label>
+                            <select class="form-select" id="foodRegion" required>
+                                <option value="">Select a region</option>
+                                <option value="1">Europe</option>
+                                <option value="2">Asia</option>
+                                <option value="3">America</option>
+                                <option value="4">Africa</option>
+                                <option value="5">Oceania</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -838,12 +844,15 @@
                             <textarea class="form-control" id="editFoodDescription" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="editFoodPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="editFoodPrice" step="0.01" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editFoodCuisine" class="form-label">Cuisine</label>
-                            <input type="text" class="form-control" id="editFoodCuisine" required>
+                            <label for="editFoodRegion" class="form-label">Region</label>
+                            <select class="form-select" id="editFoodRegion" required>
+                                <option value="">Select a region</option>
+                                <option value="1">Europe</option>
+                                <option value="2">Asia</option>
+                                <option value="3">America</option>
+                                <option value="4">Africa</option>
+                                <option value="5">Oceania</option>
+                            </select>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
