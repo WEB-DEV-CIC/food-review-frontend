@@ -136,11 +136,11 @@
                 const response = await window.api.food.getById(foodId);
                 console.log('Food details response:', response);
                 
-                const food = response; // The food object is directly in the response
+                const food = response;
                 
                 if (food) {
-                    // Create image URL with fallback
-                    const imageUrl = food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+                    // 统一图片URL获取逻辑
+                    const imageUrl = food.image_url || food.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
                     
                     document.getElementById('foodDetails').innerHTML = `
                         <div class="food-detail-card">
@@ -335,4 +335,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

@@ -78,7 +78,7 @@ const food = {
     renderFoodDetails(foodData) {
         // Safely access properties with defaults
         const name = foodData.name || 'Unnamed Food';
-        const imageUrl = foodData.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+        const imageUrl = foodData.image_url || foodData.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
         const description = foodData.description || 'No description available';
         const rating = typeof foodData.rating === 'number' ? foodData.rating : 0;
         const region = foodData.region || 'Region not specified';
@@ -89,7 +89,9 @@ const food = {
         this.foodDetail.innerHTML = `
             <div class="food-header">
                 <div class="food-image">
-                    <img src="${imageUrl}" alt="${name}" onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'">
+                    <img src="${imageUrl}" 
+                     alt="${foodData.name || 'Food Image'}" 
+                     onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'">
                 </div>
                 <div class="food-info">
                     <h1>${name}</h1>
