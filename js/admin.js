@@ -417,18 +417,29 @@ const Admin = (function() {
                     return;
                 }
 
-                const response = await window.api.admin.deleteFood(foodId);
-                if (response.success) {
-                    // Remove food from state
-                    this.state.data.foods = this.state.data.foods.filter(f => f._id !== foodId);
+                // 将字符串ID转换为数字
+                const numericId = parseInt(foodId);
+                if (isNaN(numericId)) {
+                    throw new Error('Invalid food ID');
+                }
+
+                const response = await window.api.admin.deleteFood(numericId);
+                
+                // 检查响应中的 message 而不是 success
+                if (response && response.message === 'Food deleted successfully') {
+                    // 从状态中移除食物
+                    this.state.data.foods = this.state.data.foods.filter(f => f.id !== numericId);
                     this.renderFoods();
                     this.showSuccess('Food deleted successfully');
+                    
+                    // 重新加载食物列表以确保数据同步
+                    await this.loadFoods();
                 } else {
-                    this.showError(response.message || 'Failed to delete food');
+                    throw new Error(response.error || 'Failed to delete food');
                 }
             } catch (error) {
                 console.error('Error deleting food:', error);
-                this.showError('Failed to delete food');
+                this.showError(error.message || 'Failed to delete food');
             }
         }
 

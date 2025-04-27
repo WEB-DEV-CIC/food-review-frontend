@@ -91,12 +91,23 @@ const api = {
         },
 
         async deleteFood(id) {
-            const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
-                method: 'DELETE',
-                headers: api.getHeaders()
-            });
-            if (!response.ok) throw new Error('Failed to delete food');
-            return response.json();
+            try {
+                const response = await fetch(`${api.baseUrl}/admin/foods/${id}`, {
+                    method: 'DELETE',
+                    headers: api.getHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Failed with status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data; // 直接返回后端的响应
+            } catch (error) {
+                console.error('Error deleting food:', error);
+                throw error; // 向上传递错误
+            }
         },
 
         async getReviews() {
