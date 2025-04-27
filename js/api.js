@@ -5,11 +5,24 @@ const api = {
 
     // Headers
     getHeaders() {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : ''
+        const headers = {
+            'Content-Type': 'application/json'
         };
+        
+        // 添加认证令牌（如果有）
+        const user = localStorage.getItem('user');
+        if (user) {
+            try {
+                const userData = JSON.parse(user);
+                if (userData.token) {
+                    headers['Authorization'] = `Bearer ${userData.token}`;
+                }
+            } catch (e) {
+                console.error('Failed to parse user data:', e);
+            }
+        }
+        
+        return headers;
     },
 
     // Admin endpoints
@@ -101,6 +114,33 @@ const api = {
             });
             if (!response.ok) throw new Error('Failed to delete review');
             return response.json();
+        },
+
+        async addFood(foodData) {
+            try {
+                const response = await fetch(`${api.baseUrl}/admin/foods`, {
+                    method: 'POST',
+                    headers: api.getHeaders(),
+                    body: JSON.stringify(foodData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Failed with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return {
+                    success: true,
+                    food: data
+                };
+            } catch (error) {
+                console.error('Error adding food:', error);
+                return {
+                    success: false,
+                    message: error.message
+                };
+            }
         }
     },
 
@@ -136,11 +176,22 @@ const api = {
 
         async addReview(foodId, rating, comment) {
             try {
+                // 检查用户是否已登录
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.id) {
+                    throw new Error('You must be logged in to add a review');
+                }
+
                 console.log('Submitting review for food:', foodId);
-                const response = await fetch(`${api.baseUrl}/foods/${foodId}/reviews`, {
+                const response = await fetch(`${api.baseUrl}/reviews`, {
                     method: 'POST',
                     headers: api.getHeaders(),
-                    body: JSON.stringify({ rating, comment })
+                    body: JSON.stringify({ 
+                        food_id: foodId, 
+                        user_id: user.id,
+                        rating, 
+                        comment 
+                    })
                 });
                 
                 if (!response.ok) {

@@ -1,5 +1,4 @@
 // Authentication functionality
-const API_BASE_URL = 'http://localhost:3002/api';
 
 const auth = {
     // Initialize auth functionality
@@ -223,12 +222,12 @@ const auth = {
         const self = this;
         
         // Send registration request
-        fetch(`${API_BASE_URL}/auth/register`, {
+        fetch(`${window.api.baseUrl}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include', // Include cookies
+            credentials: 'include',
             body: JSON.stringify({
                 username: name,  
                 fullname: name, 
@@ -306,7 +305,7 @@ const auth = {
         
         try {
             // Send login request
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            const response = await fetch(`${window.api.baseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -361,7 +360,7 @@ const auth = {
     // Handle logout
     logout() {
         // Send logout request to clear server-side cookie
-        fetch(`${API_BASE_URL}/auth/logout`, {
+        fetch(`${window.api.baseUrl}/auth/logout`, {
             method: 'POST',
             credentials: 'include'
         })

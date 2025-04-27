@@ -285,19 +285,19 @@ const Admin = (function() {
 
         async handleAddFood() {
             try {
-                // Get form values
+                // 获取表单值
                 const name = document.getElementById('foodName').value;
                 const region = document.getElementById('foodRegion').value;
                 const description = document.getElementById('foodDescription').value;
                 const image = document.getElementById('foodImage').value;
 
-                // Validate required fields
+                // 验证必填字段
                 if (!name || !region || !description || !image) {
                     this.showError('Please fill in all required fields');
                     return;
                 }
 
-                // Validate image URL
+                // 验证图片URL
                 if (!image.startsWith('http://') && !image.startsWith('https://')) {
                     this.showError('Please enter a valid image URL');
                     return;
@@ -305,36 +305,34 @@ const Admin = (function() {
 
                 console.log('Submitting new food:', { name, region, description, image });
 
-                // Make API call to create food
-                const response = await window.api.food.create({
+                // 使用正确的API调用创建食物
+                // 修改：使用 window.api.admin.addFood 而不是 window.api.food.create
+                const response = await window.api.admin.addFood({
                     name,
-                    region,
                     description,
-                    image,
-                    cuisine: region, // Using region as cuisine for now
-                    price: 0 // Default price
+                    region_id: parseInt(region), // 确保region_id是数字
+                    image_url: image,
+                    ingredients: [],  // 添加空数组，因为后端需要这些字段
+                    taste_profiles: [] // 添加空数组，因为后端需要这些字段
                 });
 
                 console.log('API Response:', response);
 
                 if (response && response.success) {
-                    // Close modal
+                    // 关闭模态框
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addFoodModal'));
                     if (modal) {
                         modal.hide();
                     }
                     
-                    // Clear form
+                    // 清除表单
                     document.getElementById('addFoodForm').reset();
                     
-                    // Show success message
+                    // 显示成功消息
                     this.showSuccess('Food added successfully');
                     
-                    // Reload dashboard
-                    await this.loadDashboard();
-                    
-                    // Show dashboard section
-                    this.showSection('dashboard');
+                    // 重新加载数据 (修改为使用正确的方法名)
+                    await this.loadFoods();
                 } else {
                     throw new Error(response?.message || 'Failed to add food');
                 }
