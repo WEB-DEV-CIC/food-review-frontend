@@ -29,10 +29,10 @@ Make sure CORS is properly configured if backend and frontend run on different p
  
  Features: 
 
-View food reviews
-Submit new reviews
-Responsive design
-Add,Edit and delete food lists.
+- View food reviews 
+- Submit new reviews
+- Responsive design
+- Add,Edit and delete food lists.
 
 
 
